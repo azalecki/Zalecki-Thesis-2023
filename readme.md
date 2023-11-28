@@ -14,9 +14,8 @@ If you use this template for research, please [cite it](template_reference.bib):
 
 Write a brief abstract about your research project.
 If the project is a reproduction or replication study, include the full citation with a statement
-This study is a *reproduction/replication* of:
 
-> citation to prior study
+This study is a *reproduction/replication* of my work during my independent study with Professor Peter Nelson during Fall 2023 semester.
 
 A graphical abstract of the study could also be included as an image here.
 
@@ -24,9 +23,9 @@ A graphical abstract of the study could also be included as an image here.
 
 - `Key words`: Comma-separated list of keywords (tags) for searchability. Geographers often use one or two keywords each for: theory, geographic context, and methods.
 - `Subject`: select from the [BePress Taxonomy](http://digitalcommons.bepress.com/cgi/viewcontent.cgi?article=1008&context=reference)
-- `Date created`: date when project was started
+- `Date created`: 11/28/2023
 - `Date modified`: date of most recent revision
-- `Spatial Coverage`: Specify the geographic extent of your study. This may be a place name and link to a feature in a gazetteer like GeoNames or OpenStreetMap, or a well known text (WKT) representation of a bounding box.
+- `Spatial Coverage`: Chicago, IL
 - `Spatial Resolution`: Specify the spatial resolution as a scale factor, description of the level of detail of each unit of observation (including administrative level of administrative areas), and/or or distance of a raster GRID size
 - `Spatial Reference System`: Specify the geographic or projected coordinate system for the study
 - `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
