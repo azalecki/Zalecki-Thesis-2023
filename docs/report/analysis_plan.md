@@ -1,23 +1,12 @@
-# Title of Study
+# Analysis of Neighborhood Characteristics of Library Catchment Areas in Chicago, IL
 
 ### Authors
 
-- First Name Last Name\*, email address, @githubname, ORCID link, affiliated institution(s)
-- First Name Last Name, email address, @githubname, ORCID link, affiliated institution(s)
-
-\* Corresponding author and creator
+- Alexandra "Ola" Zalecki, aezalecki@gmail.com, @azalecki, [ORCID link](https://orcid.org/0009-0009-6707-3136), Middlebury College
 
 ### Abstract
 
 Write a brief abstract about your research project.
-
-If the project is a reproduction or replication study, include a declaration of the study type with a full reference to the original study.
-For example:
-
-This study is a *replication* of:
-
-> citation to prior study
-
 A graphical abstract of the study could also be included as an image here.
 
 ### Study metadata
@@ -48,7 +37,7 @@ A graphical abstract of the study could also be included as an image here.
 
 Describe how the study relates to prior literature, e.g. is it a **original study**, **meta-analysis study**, **reproduction study**, **reanalysis study**, or **replication study**?
 
-Also describe the original study archetype, e.g. is it **observational**, **experimental**, **quasi-experimental**, or **exploratory**?
+This study is an observation study.
 
 Enumerate specific **hypotheses** to be tested or **research questions** to be investigated here, and specify the type of method, statistical test or model to be used on the hypothesis or question.
 
