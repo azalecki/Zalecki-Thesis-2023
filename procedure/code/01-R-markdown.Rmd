@@ -130,18 +130,99 @@ Each of the next subsections describes one data source.
 
 ### American Community Survey Data
 
-```{download-ACS}
+```{r test}
+v20 <- load_variables(2020, "dhc", cache = TRUE)
+
+View(v20)
+
+```
+
+```{r acs-data}
+census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
+
+age20 <- get_decennial(geography = "block",
+                       county = "Cook",
+                       state = "IL"
+                       variables = "P13_001N", 
+                       year = 2020,
+                       sumfile = "dhc")
+
+head(age20)
+
+
+
+il_income <- get_acs(
+  geography = "tract", 
+  variables = "B19013_001",
+  state = "IL", 
+  year = 2021,
+  geometry = TRUE
+)
+
+il_income
+```
+### Chicago Geography 
+```{r chicago-bounds}
+il_places <- places(state = "IL")
+
+il_places 
+
+chi <- il_places %>%
+  filter(NAME == 'Chicago')
+
+plot(chi$geometry)
 
 ```
 
 ### Libraries
 
-```{download-libraries}
+```{r cpl-data}
+cpl_data = read_csv("C:/Users/aezal/Downloads/Zalecki-2023/data/raw/public/CPL-Locations.csv")
+
+points = st_as_sf(cpl_data, coords = c("Longitude", "Latitude"), crs = 4326)
+
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = chi, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
+  addCircles(data = points, weight = 3, opacity= 1) 
 
 ```
 
+### Census Geographies data 
 
-### TIGER Tracts and Blocks and Places 
+```{r census-geo}
+
+il_blocks <- get_decennial(
+  geography = "block", 
+  variables = "B19013_001",
+  state = "IL", 
+  year = 2020,
+  geometry = TRUE
+)
+
+il_income
+
+```
+## Data transformations
+
+### ACS data transformations
+
+```{r acs-filter}
+# some of the variables need to be divided into bins like age and income 
+
+#tract data needs to be clipped/filtered by Chicago bounds
+```
+
+
+### Library Catchment Areas
+
+```{r voronoi-polygons}
+# Generate Voronoi diagram/Thiessen polygons from library point data 
+
+cpl_vor <- st_voronoi(points)
+
+```
+
 
 
 ## Prior observations  
