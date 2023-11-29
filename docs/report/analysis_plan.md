@@ -6,8 +6,7 @@
 
 ### Abstract
 
-Write a brief abstract about your research project.
-A graphical abstract of the study could also be included as an image here.
+Rising inequality and increased privatization of space in urban landscapes is bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two pronged methods that aims to answer the question of to what extent the catchment areas are distinct. 
 
 ### Study metadata
 
@@ -37,7 +36,7 @@ A graphical abstract of the study could also be included as an image here.
 
 Describe how the study relates to prior literature, e.g. is it a **original study**, **meta-analysis study**, **reproduction study**, **reanalysis study**, or **replication study**?
 
-This study is an observation study.
+This study is an original study as a part of my independent work with Professor Peter Nelson during the fall semester 2023. 
 
 Enumerate specific **hypotheses** to be tested or **research questions** to be investigated here, and specify the type of method, statistical test or model to be used on the hypothesis or question.
 
@@ -50,9 +49,17 @@ Include citations to important software projects, plugins or packages and their 
 
 ### Data and variables
 
-Describe the **data sources** and **variables** to be used.
-Data sources may include plans for observing and recording **primary data** or descriptions of **secondary data**.
-For secondary data sources with numerous variables, the analysis plan authors may focus on documenting only the variables intended for use in the study.
+Socioeconomic data is derived from the American Community Survey collected by the United States Census Bureau. This study uses the 5 year estimates of ACS that was released in 2021. 
+
+Below is a list of the variables I will be including in the study. 
+Table here
+
+Public Library address data was derived from the City of Chicago Data Portal https://data.cityofchicago.org/Education/Libraries-Locations-Contact-Information-and-Usual-/x8fc-8rcq
+
+The analysis is conducted with census tract and block geographies, which can be accessed through the Census website.
+https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html
+I access these geographer in my R code using the tigris R package. 
+
 
 Primary data sources for the study are to include ... .
 Secondary data sources for the study are to include ... .
@@ -197,7 +204,7 @@ Also explain any follow-up analyses or validations.
 
 ## Results
 
-Describe how results are to be presented.
+Descriptive statistics and a map of the library catchment areas will be how the results will be presented. 
 
 ## Discussion
 
@@ -205,15 +212,9 @@ Describe how the results are to be interpreted *vis a vis* each hypothesis or re
 
 ## Integrity Statement
 
-Include an integrity statement - The authors of this preregistration state that they completed this preregistration to the best of their knowledge and that no other preregistration exists pertaining to the same hypotheses and research.
-If a prior registration *does* exist, explain the rationale for revising the registration here.
+The author of this preregistration state that they completed this preregistration to the best of their knowledge and that no other preregistration exists pertaining to the same hypotheses and research.
 
 ## Acknowledgements
-
-- `Funding Name`: name of funding for the project
-- `Funding Title`: title of project grant
-- `Award info URI`: web address for award information
-- `Award number`: award number
 
 This report is based upon the template for Reproducible and Replicable Research in Human-Environment and Geographical Sciences, DOI:[10.17605/OSF.IO/W29MQ](https://doi.org/10.17605/OSF.IO/W29MQ)
 
