@@ -131,35 +131,30 @@ Each of the next subsections describes one data source.
 ### American Community Survey Data
 
 ```{r test}
-v20 <- load_variables(2020, "dhc", cache = TRUE)
+census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
+v20 <- load_variables(2010, "sf1", cache = FALSE)
 
 View(v20)
 
 ```
 
-```{r acs-data}
+```{r block-pop}
 census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
-age20 <- get_decennial(geography = "block",
-                       county = "Cook",
-                       state = "IL"
-                       variables = "P13_001N", 
-                       year = 2020,
-                       sumfile = "dhc")
+popvar <- c("B01003_001")
 
-head(age20)
+pop <- get_decennial(
+  geography = "block",
+  county = "Cook",
+  state = "IL",
+  variables = popvar, 
+  year = 2020,
+  )
 
+pop_df <- st_as_sf(pop)
+str(pop_df)
+head(pop_df)
 
-
-il_income <- get_acs(
-  geography = "tract", 
-  variables = "B19013_001",
-  state = "IL", 
-  year = 2021,
-  geometry = TRUE
-)
-
-il_income
 ```
 ### Chicago Geography 
 ```{r chicago-bounds}
@@ -179,7 +174,12 @@ plot(chi$geometry)
 ```{r cpl-data}
 cpl_data = read_csv("C:/Users/aezal/Downloads/Zalecki-2023/data/raw/public/CPL-Locations.csv")
 
-points = st_as_sf(cpl_data, coords = c("Longitude", "Latitude"), crs = 4326)
+#points = st_as_sf(cpl_data, coords = c("Longitude", "Latitude"), crs = 4326)
+
+points <- cpl_data %>%
+  st_as_sf(coords = c("Longitude", "Latitude")) %>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
 
 leaflet() %>% 
   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
@@ -219,7 +219,14 @@ il_income
 ```{r voronoi-polygons}
 # Generate Voronoi diagram/Thiessen polygons from library point data 
 
-cpl_vor <- st_voronoi(points)
+voronoi <- st_voronoi(points)
+str(voronoi)
+voronoipoly <- st_cast(voronoi, "POLYGON")
+# Plot the Voronoi diagram
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = voronoipoly, color = "red", weight = 1, fillColor= "red", fillOpacity = 0.2)%>%
+  addCircles(data = points, weight = 3, opacity= 1)
 
 ```
 
