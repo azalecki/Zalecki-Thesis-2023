@@ -132,89 +132,167 @@ Secondary data sources for the study are to include ... .
 
 Each of the next subsections describes one data source.
 
-### American Community Survey Data
 
-```{r test}
-census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
-v20 <- load_variables(2010, "sf1", cache = FALSE)
-
-View(v20)
-
-```
-
-```{r block-pop}
-census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
-
-popvar <- c("B01003_001")
-
-pop <- get_decennial(
-  geography = "block",
-  county = "Cook",
-  state = "IL",
-  variables = popvar, 
-  year = 2020,
-  )
-
-pop_df <- st_as_sf(pop)
-str(pop_df)
-head(pop_df)
-
-```
-### Chicago Geography 
+### Chicago Boundary 
 ```{r chicago-bounds}
+# Load in all places defined by the US Census 
 il_places <- places(state = "IL")
 
 il_places 
 
+# Filter out Chicago from Census Places
 chi <- il_places %>%
   filter(NAME == 'Chicago')
 
+# Plot geometry and check geometry/data type
 plot(chi$geometry)
 st_geometry_type(chi)
 class(chi)
 
 ```
 
+### American Community Survey Data
+
+```{r test}
+# This is my code chunk where I test run code 
+```
+
+```{r acs-data, install = TRUE}
+
+#Load in Census API Key. To get your own key visit this website: 
+
+census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
+
+# Query Sociodemographic data with Census tract boundaries
+
+# Age and Sex Table 
+
+# as_acs <- get_acs(
+#   geography = "tract",
+#   table = "S0101",
+#   county = "Cook",
+#   state = "IL",
+#   year = 2021,
+#   output = "wide",
+#   cache_table = TRUE,
+#   geometry = TRUE,
+#   keep_geo_vars = TRUE
+# )
+
+# Education Table 
+
+# edu_acs <- get_acs(
+#   geography = "tract",
+#   table = "S1501",
+#   county = "Cook",
+#   state = "IL",
+#   year = 2021,
+#   output = "wide",
+#   cache_table = TRUE,
+#   geometry = TRUE,
+#   keep_geo_vars = TRUE
+# )
+
+# Employment table 
+
+# emp_acs <- get_acs(
+#   geography = "tract",
+#   table = "S2301",
+#   county = "Cook",
+#   state = "IL",
+#   year = 2021,
+#   output = "wide",
+#   cache_table = TRUE,
+#   geometry = TRUE,
+#   keep_geo_vars = TRUE
+# )
+
+# Financial Characteristics Table 
+
+fc_acs <- get_acs(
+  geography = "tract",
+  table = "S2503",
+  county = "Cook",
+  state = "IL",
+  year = 2021,
+  output = "wide",
+  cache_table = TRUE,
+  geometry = TRUE,
+  keep_geo_vars = TRUE)%>%
+  st_set_crs(st_transform("+proj=utm +zone=16 +datum=WGS84"))
+
+# Plot one of the tables on the map to test that tracts show up 
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = fc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+
+```
+
 ### Libraries
 
 ```{r cpl-data}
+
+#Load Chicago Public Library addresses from CSV file 
 cpl_data = read_csv("https://raw.githubusercontent.com/azalecki/Zalecki-2023/main/data/raw/public/CPL-Locations.csv")
-              
-#points = st_as_sf(cpl_data, coords = c("Longitude", "Latitude"), crs = 4326)
+
+# Create points layer using coordinate column and set projection to UTM Zone 16 
 
 points <- cpl_data %>%
   st_as_sf(coords = c("Longitude", "Latitude")) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
+# Check class and geometry type of data 
+
 class(points)
 st_geometry_type(points)
 
+# Create a multipoint layer from points layer 
 multipoint <- st_combine(points)
+
+# Check geometry type 
 st_geometry_type(multipoint)
 
+# Plot points on map with Chicago boundary 
 leaflet() %>% 
   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
   addPolygons(data = chi, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
-  addCircles(data = points, weight = 3, opacity= 1) 
+  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
 
 ```
 
-### Census Geographies data 
+### Blocks with Pop Data 
 
-```{r census-geo}
+```{r pop-blocks}
 
-il_blocks <- get_decennial(
-  geography = "block", 
-  variables = "B19013_001",
-  state = "IL", 
+# Query 2020 Census population data with Census block boundaries 
+
+pop <- get_decennial(
+  geography = "block",
+  table = "P1",
+  county = "Cook",
+  state = "IL",
   year = 2020,
-  geometry = TRUE
-)
+  output = "wide",
+  cache_table = TRUE,
+  geometry = TRUE,
+  keep_geo_vars = TRUE) %>%
+  st_set_crs(st_transform("+proj=utm +zone=16 +datum=WGS84"))
 
-il_income
+# Plot block data on the map 
+
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = pop, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
 
 ```
+
+
 ## Data transformations
+
+### Clip by Chicago Boundary 
+```{r clip-chi}
+
+```
 
 ### ACS data transformations
 
@@ -232,7 +310,7 @@ il_income
 
 voronoi <- st_as_sf(multipoint)%>%
   st_voronoi() %>%
-  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  st_set_crs(st_transform("+proj=utm +zone=16 +datum=WGS84"))
   
 st_geometry_type(voronoi)
 str(voronoi)
@@ -249,6 +327,13 @@ st_geometry_type(voronoi_poly)
   #addPolygons(data = voronoi, color = "lightgray", weight = 1, fillColor= "white", fillOpacity = 1)
 ```
 
+### Filter Population Blocks 
+```{r filter-blocks}
+
+# Filter out all blocks with no population data 
+
+
+```
 
 
 ## Prior observations  
