@@ -63,7 +63,7 @@ Enumerate specific **hypotheses** to be tested or **research questions** to be i
 packages <- c( 
   "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris",
   "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", 
-  "kableExtra", "broom", "leaflet"
+  "kableExtra", "broom", "leaflet", "usethis", "deldir"
 )
 
 # force all conflicts to become errors
@@ -115,6 +115,10 @@ knitr::opts_chunk$set(
   fig.width = 8,
   fig.path = paste0(here("results", "figures"), "/")
 )
+
+#set up Github repository as the R project
+#use_github("azalecki/Zalecki-2023")
+
 ```
 
 ## Data and variables
@@ -166,20 +170,27 @@ chi <- il_places %>%
   filter(NAME == 'Chicago')
 
 plot(chi$geometry)
+st_geometry_type(chi)
+class(chi)
 
 ```
 
 ### Libraries
 
 ```{r cpl-data}
-cpl_data = read_csv("C:/Users/aezal/Downloads/Zalecki-2023/data/raw/public/CPL-Locations.csv")
-
+cpl_data = read_csv("https://raw.githubusercontent.com/azalecki/Zalecki-2023/main/data/raw/public/CPL-Locations.csv")
+              
 #points = st_as_sf(cpl_data, coords = c("Longitude", "Latitude"), crs = 4326)
 
 points <- cpl_data %>%
   st_as_sf(coords = c("Longitude", "Latitude")) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
+class(points)
+st_geometry_type(points)
+
+multipoint <- st_combine(points)
+st_geometry_type(multipoint)
 
 leaflet() %>% 
   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
@@ -219,15 +230,23 @@ il_income
 ```{r voronoi-polygons}
 # Generate Voronoi diagram/Thiessen polygons from library point data 
 
-voronoi <- st_voronoi(points)
+voronoi <- st_as_sf(multipoint)%>%
+  st_voronoi() %>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  
+st_geometry_type(voronoi)
 str(voronoi)
-voronoipoly <- st_cast(voronoi, "POLYGON")
-# Plot the Voronoi diagram
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-  addPolygons(data = voronoipoly, color = "red", weight = 1, fillColor= "red", fillOpacity = 0.2)%>%
-  addCircles(data = points, weight = 3, opacity= 1)
+class(voronoi)
+plot(voronoi, col = "lightgray", main = "Voronoi Diagram")
 
+voronoi_poly = st_cast(voronoi, "MULTIPOLYGON")
+class(voronoi_poly)
+st_geometry_type(voronoi_poly)
+
+# Plot the Voronoi diagram
+#leaflet() %>% 
+  #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  #addPolygons(data = voronoi, color = "lightgray", weight = 1, fillColor= "white", fillOpacity = 1)
 ```
 
 
