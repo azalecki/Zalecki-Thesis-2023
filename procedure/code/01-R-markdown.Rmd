@@ -63,7 +63,7 @@ Enumerate specific **hypotheses** to be tested or **research questions** to be i
 packages <- c( 
   "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris",
   "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", 
-  "kableExtra", "broom", "leaflet", "usethis", "deldir"
+  "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat"
 )
 
 # force all conflicts to become errors
@@ -142,7 +142,8 @@ il_places
 
 # Filter out Chicago from Census Places
 chi <- il_places %>%
-  filter(NAME == 'Chicago')
+  filter(NAME == 'Chicago')%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
 # Plot geometry and check geometry/data type
 plot(chi$geometry)
@@ -219,12 +220,17 @@ fc_acs <- get_acs(
   cache_table = TRUE,
   geometry = TRUE,
   keep_geo_vars = TRUE)%>%
-  st_set_crs(st_transform("+proj=utm +zone=16 +datum=WGS84"))
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+# Check attributes of table
+
+# attributes(fc_acs)
 
 # Plot one of the tables on the map to test that tracts show up 
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-  addPolygons(data = fc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+
+#leaflet() %>% 
+  #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  #addPolygons(data = fc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
 
 ```
 
@@ -256,7 +262,7 @@ st_geometry_type(multipoint)
 leaflet() %>% 
   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
   addPolygons(data = chi, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
-  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
+  addCircles(data = multipoint, weight = 3, opacity= 1, color = "orange") 
 
 ```
 
@@ -276,8 +282,8 @@ pop <- get_decennial(
   cache_table = TRUE,
   geometry = TRUE,
   keep_geo_vars = TRUE) %>%
-  st_set_crs(st_transform("+proj=utm +zone=16 +datum=WGS84"))
-
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+attributes(pop)
 # Plot block data on the map 
 
 leaflet() %>% 
@@ -305,32 +311,83 @@ leaflet() %>%
 
 ### Library Catchment Areas
 
+
+```{r}
+
+# Load precipitation data
+z <- gzcon(url("https://github.com/mgimond/Spatial/raw/main/Data/precip.rds"))
+P <- readRDS(z)
+p <- st_as_sf(P)
+# Load Texas boudary map
+z <- gzcon(url("https://github.com/mgimond/Spatial/raw/main/Data/texas.rds"))
+W <- readRDS(z)
+w <- st_as_sf(W)
+
+# # Replace point boundary extent with that of Texas
+
+tm_shape(w) + tm_polygons() +
+  tm_shape(p) +
+  tm_dots(col="Precip_in", palette = "RdBu", auto.palette.mapping = FALSE,
+             title="Sampled precipitation \n(in inches)", size=0.7) +
+  tm_text("Precip_in", just="left", xmod=.5, size = 0.7) +
+  tm_legend(legend.outside=TRUE)
+
+```
+
+
+```{r vor-pol-test}
+
+library(spatstat)  # Used for the dirichlet tessellation function
+
+# Create a tessellated surface
+th  <- dirichlet(as.ppp(p)) |> st_as_sfc() |> st_as_sf()
+
+# The dirichlet function does not carry over projection information
+# requiring that this information be added manually
+st_crs(th) <- st_crs(p)
+
+# The tessellated surface does not store attribute information
+# from the point data layer. We'll join the point attributes to the polygons
+th2     <- st_join(th, p, fn=mean)
+
+# Finally, we'll clip the tessellated  surface to the Texas boundaries
+th.clp   <- st_intersection(th2, w)
+
+# Map the data
+tm_shape(th.clp) + 
+  tm_polygons(col="Precip_in", palette="RdBu", auto.palette.mapping=FALSE,
+              title="Predicted precipitation \n(in inches)") +
+  tm_legend(legend.outside=TRUE)
+```
+
 ```{r voronoi-polygons}
 # Generate Voronoi diagram/Thiessen polygons from library point data 
 
-voronoi <- st_as_sf(multipoint)%>%
-  st_voronoi() %>%
-  st_set_crs(st_transform("+proj=utm +zone=16 +datum=WGS84"))
-  
-st_geometry_type(voronoi)
-str(voronoi)
-class(voronoi)
-plot(voronoi, col = "lightgray", main = "Voronoi Diagram")
+voronoi <- dirichlet(as.ppp(points))%>% 
+  st_as_sfc() %>% 
+  st_as_sf()
 
-voronoi_poly = st_cast(voronoi, "MULTIPOLYGON")
-class(voronoi_poly)
-st_geometry_type(voronoi_poly)
+# Carry over the projection information 
+st_crs(voronoi) <- st_crs(points)
 
-# Plot the Voronoi diagram
-#leaflet() %>% 
-  #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-  #addPolygons(data = voronoi, color = "lightgray", weight = 1, fillColor= "white", fillOpacity = 1)
+#Join the point attributes to voronoi polygons
+vor2 <- st_join(voronoi, points)
+
+attributes(vor2)
+#vor_clp <- st_intersection(vor2, points)
+
+# Map polygons and points
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = vor2, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)%>%
+  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
 ```
 
 ### Filter Population Blocks 
 ```{r filter-blocks}
 
 # Filter out all blocks with no population data 
+# SE_T001_001
 
 
 ```
