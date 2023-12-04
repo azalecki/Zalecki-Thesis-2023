@@ -285,6 +285,7 @@ pop <- get_decennial(
   keep_geo_vars = TRUE) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 attributes(pop)
+
 # Plot block data on the map 
 
 leaflet() %>% 
@@ -387,9 +388,9 @@ st_bbox(sf_points) <- bbox_adjusted
 ```
 
 ```{r voronoi-polygons}
-# Extend the extent 
 
 # Generate Voronoi diagram/Thiessen polygons from library point data 
+library(spatstat)
 
 voronoi <- dirichlet(as.ppp(points))%>% 
   st_as_sfc() %>% 
@@ -409,16 +410,19 @@ plot(vor_clp$geometry)
 
 # Map polygons and points
 leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-  addPolygons(data = vor2, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)%>%
-  addCircles(data = vor_clp, weight = 3, opacity= 1, color = "orange") 
+addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = vor_clp, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)%>%
+  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
 ```
 
 ### Filter Population Blocks 
 ```{r filter-blocks}
 
 # Filter out all blocks with no population data 
-# SE_T001_001
+
+pop %>% filter()
+  
+  flights %>% filter(dep_time >= 600, dep_time <= 605)
 
 
 ```
