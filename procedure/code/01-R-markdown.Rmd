@@ -62,8 +62,8 @@ Enumerate specific **hypotheses** to be tested or **research questions** to be i
 # and double colons such as here::i_am()
 packages <- c( 
   "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris",
-  "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", 
-  "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat"
+  "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", "arc2r",
+  "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat", "ggplot2"
 )
 
 # force all conflicts to become errors
@@ -136,6 +136,7 @@ Each of the next subsections describes one data source.
 ### Chicago Boundary 
 ```{r chicago-bounds}
 # Load in all places defined by the US Census 
+library(tigris)
 il_places <- places(state = "IL")
 
 il_places 
@@ -228,9 +229,9 @@ fc_acs <- get_acs(
 
 # Plot one of the tables on the map to test that tracts show up 
 
-#leaflet() %>% 
-  #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-  #addPolygons(data = fc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = fc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
 
 ```
 
@@ -262,7 +263,7 @@ st_geometry_type(multipoint)
 leaflet() %>% 
   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
   addPolygons(data = chi, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
-  addCircles(data = multipoint, weight = 3, opacity= 1, color = "orange") 
+  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
 
 ```
 
@@ -360,7 +361,34 @@ tm_shape(th.clp) +
   tm_legend(legend.outside=TRUE)
 ```
 
+```{r}
+
+# Assuming 'sf_points' is your sf object
+sf_points <- st_as_sf(points)
+
+# Specify desired extent percentages
+x_extent_pct <- 0.2
+y_extent_pct <- 0.2
+
+# Calculate the bounding box
+bbox <- st_bbox(sf_points)
+
+# Adjust the bounding box
+bbox_adjusted <- c(
+  xmin = bbox$xmin - x_extent_pct * diff(c(bbox$xmin, bbox$xmax)),
+  xmax = bbox$xmax + x_extent_pct * diff(c(bbox$xmin, bbox$xmax)),
+  ymin = bbox$ymin - y_extent_pct * diff(c(bbox$ymin, bbox$ymax)),
+  ymax = bbox$ymax + y_extent_pct * diff(c(bbox$ymin, bbox$ymax))
+)
+
+# Update the bounding box of the sf object
+st_bbox(sf_points) <- bbox_adjusted
+
+```
+
 ```{r voronoi-polygons}
+# Extend the extent 
+
 # Generate Voronoi diagram/Thiessen polygons from library point data 
 
 voronoi <- dirichlet(as.ppp(points))%>% 
@@ -374,13 +402,16 @@ st_crs(voronoi) <- st_crs(points)
 vor2 <- st_join(voronoi, points)
 
 attributes(vor2)
-#vor_clp <- st_intersection(vor2, points)
+
+vor_clp <- st_intersection(vor2, chi)
+
+plot(vor_clp$geometry)
 
 # Map polygons and points
 leaflet() %>% 
   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
   addPolygons(data = vor2, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)%>%
-  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
+  addCircles(data = vor_clp, weight = 3, opacity= 1, color = "orange") 
 ```
 
 ### Filter Population Blocks 
