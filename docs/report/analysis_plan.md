@@ -19,31 +19,20 @@ Rising inequality and increased privatization of space in urban landscapes is br
 - `Spatial Reference System`: Specify the geographic or projected coordinate system for the study, e.g. EPSG:4326
 - `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
 - `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
-- `Funding Name`: name of funding for the project
-- `Funding Title`: title of project grant
-- `Award info URI`: web address for award information
-- `Award number`: award number
-
-#### Original study spatio-temporal metadata
-
-- `Spatial Coverage`: extent of original study
-- `Spatial Resolution`: resolution of original study
-- `Spatial Reference System`: spatial reference system of original study
-- `Temporal Coverage`: temporal extent of original study
-- `Temporal Resolution`: temporal resolution of original study
 
 ## Study design
 
-Describe how the study relates to prior literature, e.g. is it a **original study**, **meta-analysis study**, **reproduction study**, **reanalysis study**, or **replication study**?
-
-This study is an original study as a part of my independent work with Professor Peter Nelson during the fall semester 2023. 
+This study is **an original study** as a part of my independent work with Professor Peter Nelson during the fall semester 2023. 
 
 Enumerate specific **hypotheses** to be tested or **research questions** to be investigated here, and specify the type of method, statistical test or model to be used on the hypothesis or question.
+
+This research aims to answer the following two questions. How do library service catchment areas differ along lines of race, class, gender, etc. How do the public services in these catchment areas reflect the nature of their local constituents? 
 
 ## Materials and procedure
 
 ### Computational environment
 
+This study will be 
 Define the hardware, operating system, and software requirements for the research.
 Include citations to important software projects, plugins or packages and their versions.
 
