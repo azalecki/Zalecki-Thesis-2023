@@ -3,41 +3,25 @@ If you use this template for research, please [cite it](template_reference.bib):
 
 # Analysis of Neighborhood Characteristics of Library Catchment Areas in Chicago, IL
 
-## Contributors
+### Authors
 
 - Alexandra "Ola" Zalecki, aezalecki@gmail.com, @azalecki, [ORCID link](https://orcid.org/0009-0009-6707-3136), Middlebury College
 
-## Abstract
+### Abstract
 
-Write a brief abstract about your research project.
-If the project is a reproduction or replication study, include the full citation with a statement
+Rising inequality and increased privatization of space in urban landscapes is bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two pronged methods that aims to answer the question of to what extent the catchment areas are distinct. 
 
-This study is a reproduction of my work during my independent study with Professor Peter Nelson during Fall 2023 semester.
+### Study Metadata
 
-A graphical abstract of the study could also be included as an image here.
-
-## Study Metadata
-
-- `Key words`: Comma-separated list of keywords (tags) for searchability. Geographers often use one or two keywords each for: theory, geographic context, and methods.
+- `Key words`: public space, library programs, inequality, gis
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
 - `Date created`: 11/28/2023
-- `Date modified`: 11/28/2023
+- `Date modified`: 12/5/2023
 - `Spatial Coverage`: Chicago, IL
-- `Spatial Resolution`: Specify the spatial resolution as a scale factor, description of the level of detail of each unit of observation (including administrative level of administrative areas), and/or or distance of a raster GRID size
-- `Spatial Reference System`: Specify the geographic or projected coordinate system for the study
-- `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
+- `Spatial Resolution`: Census Tracts, Census Blocks, Library Service Areas
+- `Spatial Reference System`: EPSG:32616 
+- `Temporal Coverage`: 2017-Present
 - `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
-
-## Related to
-
-- `OSF Project`:
-- `Pre-analysis Registration`:
-- `Post-analysis Report Registration`:
-- `Preprint`:
-- `Conference Presentation`:
-- `Publication`:
-- `Prior Study`:
-- `...`:
 
 ## Metadata for access
 
