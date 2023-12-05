@@ -56,13 +56,12 @@ Enumerate specific **hypotheses** to be tested or **research questions** to be i
 
 ## Computational environment
 
-```{r environment-setup, include = FALSE}
+```{r environment-setup, eval = false}
 # record all the packages you are using here
 # this includes any calls to library(), require(),
 # and double colons such as here::i_am()
 packages <- c( 
-  "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris",
-  "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", "arc2r",
+  "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr",
   "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat", "ggplot2"
 )
 
@@ -97,6 +96,8 @@ groundhog.library(packages, groundhog.day)
 # you may need to restart R and rerun this code to load installed packages
 # In RStudio, restart r with Session -> Restart Session
 
+# non-groundhog method for installing packages:
+lapply(packages, library, character.only = TRUE)
 # record the R processing environment
 # alternatively, use devtools::session_info() for better results
 writeLines(
@@ -116,8 +117,6 @@ knitr::opts_chunk$set(
   fig.path = paste0(here("results", "figures"), "/")
 )
 
-#set up Github repository as the R project
-#use_github("azalecki/Zalecki-2023")
 
 ```
 
@@ -148,8 +147,12 @@ chi <- il_places %>%
 
 # Plot geometry and check geometry/data type
 plot(chi$geometry)
+
+head(chi)
+
 st_geometry_type(chi)
 class(chi)
+
 
 ```
 
@@ -225,7 +228,10 @@ fc_acs <- get_acs(
 
 # Check attributes of table
 
-# attributes(fc_acs)
+attributes(fc_acs)
+head(fc_acs)
+class(fc_acs)
+st_geometry_type(fc_acs)
 
 # Plot one of the tables on the map to test that tracts show up 
 
@@ -285,21 +291,42 @@ pop <- get_decennial(
   keep_geo_vars = TRUE) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 attributes(pop)
-
-# Plot block data on the map 
-
-leaflet() %>% 
-  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-  addPolygons(data = pop, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+head(pop)
 
 ```
 
 
 ## Data transformations
 
+### Filter Block Data 
+
+```{r filter-pop}
+
+pop_filter <- filter(fc_acs, ! )
+  
+  
+acs <- filter(acs, !17 %in% c("02", "15", "72")) %>%
+  st_transform(5070) %>%
+  st_make_valid()
+
+#leaflet() %>% 
+  #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  #addPolygons(data = pop, color = "blue", weight = 1, fillColor= "blue", fillOpacity = 0.2)
+```
+
 ### Clip by Chicago Boundary 
 ```{r clip-chi}
 
+chi_tracts <- st_intersection(fc_acs, chi)%>%
+  st_make_valid()
+
+#class(chi_tracts)
+
+chi_tracts_map <- leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = chi_tracts, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+
+chi_tracts_map
 ```
 
 ### ACS data transformations
@@ -312,80 +339,6 @@ leaflet() %>%
 
 
 ### Library Catchment Areas
-
-
-```{r}
-
-# Load precipitation data
-z <- gzcon(url("https://github.com/mgimond/Spatial/raw/main/Data/precip.rds"))
-P <- readRDS(z)
-p <- st_as_sf(P)
-# Load Texas boudary map
-z <- gzcon(url("https://github.com/mgimond/Spatial/raw/main/Data/texas.rds"))
-W <- readRDS(z)
-w <- st_as_sf(W)
-
-# # Replace point boundary extent with that of Texas
-
-tm_shape(w) + tm_polygons() +
-  tm_shape(p) +
-  tm_dots(col="Precip_in", palette = "RdBu", auto.palette.mapping = FALSE,
-             title="Sampled precipitation \n(in inches)", size=0.7) +
-  tm_text("Precip_in", just="left", xmod=.5, size = 0.7) +
-  tm_legend(legend.outside=TRUE)
-
-```
-
-
-```{r vor-pol-test}
-
-library(spatstat)  # Used for the dirichlet tessellation function
-
-# Create a tessellated surface
-th  <- dirichlet(as.ppp(p)) |> st_as_sfc() |> st_as_sf()
-
-# The dirichlet function does not carry over projection information
-# requiring that this information be added manually
-st_crs(th) <- st_crs(p)
-
-# The tessellated surface does not store attribute information
-# from the point data layer. We'll join the point attributes to the polygons
-th2     <- st_join(th, p, fn=mean)
-
-# Finally, we'll clip the tessellated  surface to the Texas boundaries
-th.clp   <- st_intersection(th2, w)
-
-# Map the data
-tm_shape(th.clp) + 
-  tm_polygons(col="Precip_in", palette="RdBu", auto.palette.mapping=FALSE,
-              title="Predicted precipitation \n(in inches)") +
-  tm_legend(legend.outside=TRUE)
-```
-
-```{r}
-
-# Assuming 'sf_points' is your sf object
-sf_points <- st_as_sf(points)
-
-# Specify desired extent percentages
-x_extent_pct <- 0.2
-y_extent_pct <- 0.2
-
-# Calculate the bounding box
-bbox <- st_bbox(sf_points)
-
-# Adjust the bounding box
-bbox_adjusted <- c(
-  xmin = bbox$xmin - x_extent_pct * diff(c(bbox$xmin, bbox$xmax)),
-  xmax = bbox$xmax + x_extent_pct * diff(c(bbox$xmin, bbox$xmax)),
-  ymin = bbox$ymin - y_extent_pct * diff(c(bbox$ymin, bbox$ymax)),
-  ymax = bbox$ymax + y_extent_pct * diff(c(bbox$ymin, bbox$ymax))
-)
-
-# Update the bounding box of the sf object
-st_bbox(sf_points) <- bbox_adjusted
-
-```
 
 ```{r voronoi-polygons}
 
