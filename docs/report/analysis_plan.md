@@ -22,33 +22,28 @@ Rising inequality and increased privatization of space in urban landscapes is br
 
 ## Study design
 
-This study is **an original study** as a part of my independent work with Professor Peter Nelson during the fall semester 2023. 
+This study is a reproduction of my own **an original study**. As part of my independent research work with Professor Peter Nelson, I created a workflow in QGIS to answer the question: How do library service catchment areas deiffer along lines of race, class, gender, etc? In order to streamline this research and make it reproducible/replicable I decided to reproduce the workflow in R and create a research compendium for it as part of my final independent project in GEOG0361: Open GIScience.
 
 Enumerate specific **hypotheses** to be tested or **research questions** to be investigated here, and specify the type of method, statistical test or model to be used on the hypothesis or question.
 
 This research aims to answer the following two questions. How do library service catchment areas differ along lines of race, class, gender, etc. How do the public services in these catchment areas reflect the nature of their local constituents? 
 
 ## Materials and procedure
-r
+
 ### Computational environment
 
 This study will be completed using The R Project for Statistical Computing v.[] or later. The research will be completed on the Windows 10 operating system. A complete list of required R packages will be reported with the final report. 
 
 ### Data and variables
 
-Socioeconomic data is derived from the American Community Survey collected by the United States Census Bureau. This study uses the 5 year estimates of ACS that was released in 2021. 
+Socioeconomic data at the census tract level is derived from the American Community Survey 5 year estimates (released in 2021) collected by the US Census Bureau. 
 
-Block population data is derived from the U.S Census Bureau. 
+Population data at the census block level is derivced from the US Decennial Census(released in 2020) collected by the US Census Bureau.
 
-Below is a list of the variables I will be including in the study. 
-Table here
+Chicago Public Library addresses were derived from the City of Chicago Data Portal. 
 
 Public Library address data was derived from the City of Chicago Data Portal https://data.cityofchicago.org/Education/Libraries-Locations-Contact-Information-and-Usual-/x8fc-8rcq
 
-The analysis is conducted with census tract and block geographies, which can be accessed through the Census website.
-https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html
-I access these geographer in my R code using the tigris R package. 
- 
 #### ACS Socioeconomic Data 
 
 **Standard Metadata**
@@ -78,27 +73,6 @@ I access these geographer in my R code using the tigris R package.
 | variable1 | ... | ... | ... | ... | ... | ... | ... |
 | variable2 | ... | ... | ... | ... | ... | ... | ... |
 
-#### Secondary data source2 name
-
-... same form as above...
-
-### Prior observations  
-
-Prior experience with the study area, prior data collection, or prior observation of the data can compromise the validity of a study, e.g. through p-hacking.
-Therefore, disclose any prior experience or observations at the time of study pre-registration here, with example text below:
-
-At the time of this study pre-registration, the authors had _____ prior knowledge of the geography of the study region with regards to the ____ phenomena to be studied.
-This study is related to ____ prior studies by the authors
-
-For each primary data source, declare the extent to which authors had already engaged with the data:
-
-- [ ] no data collection has started
-- [ ] pilot test data has been collected
-- [ ] data collection is in progress and data has not been observed
-- [ ] data collection is in progress and __% of data has been observed
-- [ ] data collection is complete and data has been observed. Explain how authors have already manipulated / explored the data.
-
-For each secondary source, declare the extent to which authors had already engaged with the data:
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
@@ -106,29 +80,36 @@ For each secondary source, declare the extent to which authors had already engag
 - [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
-If pilot test data has been collected or acquired, describe how the researchers observed and analyzed the pilot test, and the extent to which the pilot test influenced the research design.
 
-#### Tertiary data source2 name
+#### Population Data US Census 
 
-... same form as above...
+**Standard Metadata**
 
-### Prior observations  
+- `Abstract`: Brief description of the data source
+- `Spatial Coverage`: Specify the geographic extent of your study. This may be a place name and link to a feature in a gazetteer like GeoNames or OpenStreetMap, or a well known text (WKT) representation of a bounding box.
+- `Spatial Resolution`: Specify the spatial resolution as a scale factor, description of the level of detail of each unit of observation (including administrative level of administrative areas), and/or or distance of a raster GRID size
+- `Spatial Reference System`: Specify the geographic or projected coordinate system for the study
+- `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
+- `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
+- `Lineage`: Describe and/or cite data sources and/or methodological steps used to create this data source
+- `Distribution`: Describe how the data is distributed, including any persistent identifier (e.g. DOI) or URL for data access
+- `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
+- `Data Quality`: State result of quality assessment or state "Quality unknown"
+- `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
+  - `Label`: variable name as used in the data or code
+  - `Alias`: intuitive natural language name
+  - `Definition`: Short description or definition of the variable. Include measurement units in description.
+  - `Type`: data type, e.g. character string, integer, real
+  - `Accuracy`: e.g. uncertainty of measurements
+  - `Domain`: Range (Maximum and Minimum) of numerical data, or codes or categories of nominal data, or reference to a standard codebook
+  - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
+  - `Missing Data Frequency`: Frequency of missing data observations
 
-Prior experience with the study area, prior data collection, or prior observation of the data can compromise the validity of a study, e.g. through p-hacking.
-Therefore, disclose any prior experience or observations at the time of study pre-registration here, with example text below:
+| Label | Alias | Definition | Type | Accuracy | Domain | Missing Data Value(s) | Missing Data Frequency |
+| :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
+| variable1 | ... | ... | ... | ... | ... | ... | ... |
+| variable2 | ... | ... | ... | ... | ... | ... | ... |
 
-At the time of this study pre-registration, the authors had _____ prior knowledge of the geography of the study region with regards to the ____ phenomena to be studied.
-This study is related to ____ prior studies by the authors
-
-For each primary data source, declare the extent to which authors had already engaged with the data:
-
-- [ ] no data collection has started
-- [ ] pilot test data has been collected
-- [ ] data collection is in progress and data has not been observed
-- [ ] data collection is in progress and __% of data has been observed
-- [ ] data collection is complete and data has been observed. Explain how authors have already manipulated / explored the data.
-
-For each secondary source, declare the extent to which authors had already engaged with the data:
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
@@ -136,7 +117,41 @@ For each secondary source, declare the extent to which authors had already engag
 - [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
-If pilot test data has been collected or acquired, describe how the researchers observed and analyzed the pilot test, and the extent to which the pilot test influenced the research design.
+#### Public Library Addresses
+
+**Standard Metadata**
+
+- `Abstract`: Brief description of the data source
+- `Spatial Coverage`: Specify the geographic extent of your study. This may be a place name and link to a feature in a gazetteer like GeoNames or OpenStreetMap, or a well known text (WKT) representation of a bounding box.
+- `Spatial Resolution`: Specify the spatial resolution as a scale factor, description of the level of detail of each unit of observation (including administrative level of administrative areas), and/or or distance of a raster GRID size
+- `Spatial Reference System`: Specify the geographic or projected coordinate system for the study
+- `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
+- `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
+- `Lineage`: Describe and/or cite data sources and/or methodological steps used to create this data source
+- `Distribution`: Describe how the data is distributed, including any persistent identifier (e.g. DOI) or URL for data access
+- `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
+- `Data Quality`: State result of quality assessment or state "Quality unknown"
+- `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
+  - `Label`: variable name as used in the data or code
+  - `Alias`: intuitive natural language name
+  - `Definition`: Short description or definition of the variable. Include measurement units in description.
+  - `Type`: data type, e.g. character string, integer, real
+  - `Accuracy`: e.g. uncertainty of measurements
+  - `Domain`: Range (Maximum and Minimum) of numerical data, or codes or categories of nominal data, or reference to a standard codebook
+  - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
+  - `Missing Data Frequency`: Frequency of missing data observations
+
+| Label | Alias | Definition | Type | Accuracy | Domain | Missing Data Value(s) | Missing Data Frequency |
+| :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
+| variable1 | ... | ... | ... | ... | ... | ... | ... |
+| variable2 | ... | ... | ... | ... | ... | ... | ... |
+
+
+- [ ] data is not available yet
+- [ ] data is available, but only metadata has been observed
+- [ ] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 ### Bias and threats to validity
 
