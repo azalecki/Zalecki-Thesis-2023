@@ -3,20 +3,15 @@ If you use this template for research, please [cite it](template_reference.bib):
 
 # Analysis of Neighborhood Characteristics of Library Catchment Areas in Chicago, IL
 
-## Contributors
+### Authors
 
 - Alexandra "Ola" Zalecki, aezalecki@gmail.com, @azalecki, [ORCID link](https://orcid.org/0009-0009-6707-3136), Middlebury College
 
-## Abstract
+### Abstract
 
-Write a brief abstract about your research project.
-If the project is a reproduction or replication study, include the full citation with a statement
+Rising inequality and increased privatization of space in urban landscapes is bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two pronged methods that aims to answer the question of to what extent the catchment areas are distinct. 
 
-This study is a reproduction of my work during my independent study with Professor Peter Nelson during Fall 2023 semester.
-
-A graphical abstract of the study could also be included as an image here.
-
-## Study Metadata
+### Study Metadata
 
 - `Key words`: public space, library programs, inequality, gis
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
@@ -27,7 +22,6 @@ A graphical abstract of the study could also be included as an image here.
 - `Spatial Reference System`: EPSG:32616 
 - `Temporal Coverage`: 2017-Present
 - `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
-
 
 ## Metadata for access
 
