@@ -1,0 +1,433 @@
+---
+title: "Analysis of Neighborhood Characteristics of Library Catchment Areas in Chicago, IL"
+author: "Alexandra Ola Zalecki"
+date: "`r Sys.Date()`"
+output: pdf_document
+editor_options:
+  markdown:
+    wrap: sentence
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../../docs/report") })
+---
+
+# Abstract
+
+Rising inequality and increased privatization of space in urban landscapes is bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two pronged methods that aims to answer the question of to what extent the catchment areas are distinct. 
+
+## Study Metadata
+
+- `Key words`: public space, library programs, inequality, gis
+- `Subject`: Social and Behavioral Sciences: Geography: Human Geography
+- `Date created`: 11/28/2023
+- `Date modified`: 12/5/2023
+- `Spatial Coverage`: Chicago, IL
+- `Spatial Resolution`: Census Tracts, Census Blocks, Library Service Areas
+- `Spatial Reference System`: EPSG:32616 
+- `Temporal Coverage`: 2017-Present
+- `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
+
+# Study design
+
+This study is a reproduction of my own **an original study**. As part of my independent research work with Professor Peter Nelson, I created a workflow in QGIS to answer the question: How do library service catchment areas deiffer along lines of race, class, gender, etc? In order to streamline this research and make it reproducible/replicable I decided to reproduce the workflow in R and create a research compendium for it as part of my final independent project in GEOG0361: Open GIScience.
+
+Enumerate specific **hypotheses** to be tested or **research questions** to be investigated here, and specify the type of method, statistical test or model to be used on the hypothesis or question.
+
+This research aims to answer the following two questions. How do library service catchment areas differ along lines of race, class, gender, etc. How do the public services in these catchment areas reflect the nature of their local constituents? 
+
+
+# Materials and procedure
+
+## Computational environment
+
+```{r environment-setup, include = FALSE}
+# record all the packages you are using here
+# this includes any calls to library(), require(),
+# and double colons such as here::i_am()
+packages <- c( 
+  "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris",
+  "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", 
+  "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat"
+)
+
+# force all conflicts to become errors
+# if you load dplyr and use filter(), R has to guess whether you mean dplyr::filter() or stats::filter()
+# the conflicted package forces you to be explicit about this
+# disable at your own peril
+# https://conflicted.r-lib.org/
+require(conflicted)
+
+# load and install required packages
+# https://groundhogr.com/
+if (!require(groundhog)) {
+  install.packages("groundhog")
+  require(groundhog)
+}
+
+if(!require(here)){
+  install.packages("here")
+  require(here)
+}
+
+# this date will be used to determine the versions of R and your packages
+# it is best practice to keep R and its packages up to date
+groundhog.day <- "2023-06-26"
+set.groundhog.folder("../../data/scratch/groundhog/")
+
+# this replaces any library() or require() calls
+groundhog.library(packages, groundhog.day)
+# you may need to install a correct version of R
+# you may need to respond OK in the console to permit groundhog to install packages
+# you may need to restart R and rerun this code to load installed packages
+# In RStudio, restart r with Session -> Restart Session
+
+# record the R processing environment
+# alternatively, use devtools::session_info() for better results
+writeLines(
+  capture.output(sessionInfo()),
+  here("procedure", "environment", paste0("r-environment-", Sys.Date(), ".txt"))
+)
+
+# save package citations
+knitr::write_bib(c(packages, "base"), file = here("software.bib"))
+
+# set up default knitr parameters
+# https://yihui.org/knitr/options/
+knitr::opts_chunk$set(
+  echo = FALSE, # Run code, show outputs (don't show code)
+  fig.retina = 4,
+  fig.width = 8,
+  fig.path = paste0(here("results", "figures"), "/")
+)
+
+#set up Github repository as the R project
+#use_github("azalecki/Zalecki-2023")
+
+```
+
+## Data and variables
+
+Describe the **data sources** and **variables** to be used.
+Data sources may include plans for observing and recording **primary data** or descriptions of **secondary data**.
+For secondary data sources with numerous variables, the analysis plan authors may focus on documenting only the variables intended for use in the study.
+
+Primary data sources for the study are to include ... .
+Secondary data sources for the study are to include ... .
+
+Each of the next subsections describes one data source.
+
+
+### Chicago Boundary 
+```{r chicago-bounds}
+# Load in all places defined by the US Census 
+il_places <- places(state = "IL")
+
+il_places 
+
+# Filter out Chicago from Census Places
+chi <- il_places %>%
+  dplyr::filter(NAME == 'Chicago')%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+# Plot geometry and check geometry/data type
+plot(chi$geometry)
+st_geometry_type(chi)
+class(chi)
+
+```
+
+### American Community Survey Data
+
+```{r test}
+# This is my code chunk where I test run code 
+```
+
+```{r acs-data, install = TRUE}
+
+#Load in Census API Key. To get your own key visit this website: 
+
+census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
+
+# Query Sociodemographic data with Census tract boundaries
+
+# Age and Sex Table 
+
+# as_acs <- get_acs(
+#   geography = "tract",
+#   table = "S0101",
+#   county = "Cook",
+#   state = "IL",
+#   year = 2021,
+#   output = "wide",
+#   cache_table = TRUE,
+#   geometry = TRUE,
+#   keep_geo_vars = TRUE
+# )
+
+# Education Table 
+
+# edu_acs <- get_acs(
+#   geography = "tract",
+#   table = "S1501",
+#   county = "Cook",
+#   state = "IL",
+#   year = 2021,
+#   output = "wide",
+#   cache_table = TRUE,
+#   geometry = TRUE,
+#   keep_geo_vars = TRUE
+# )
+
+# Employment table 
+
+ emp_acs <- get_acs(
+   geography = "tract",
+   table = "S2301",
+   county = "Cook",
+   state = "IL",
+   year = 2021,
+   output = "wide",
+   cache_table = TRUE,
+   geometry = TRUE,
+   keep_geo_vars = TRUE)%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+# Financial Characteristics Table 
+
+fc_acs <- get_acs(
+  geography = "tract",
+  table = "S2503",
+  county = "Cook",
+  state = "IL",
+  year = 2021,
+  output = "wide",
+  cache_table = TRUE,
+  geometry = TRUE,
+  keep_geo_vars = TRUE)%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+# Check attributes of table
+
+# attributes(fc_acs)
+
+# Plot one of the tables on the map to test that tracts show up 
+
+#leaflet() %>% 
+  #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  #addPolygons(data = fc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+
+```
+
+### Libraries
+
+```{r cpl-data}
+
+#Load Chicago Public Library addresses from CSV file 
+cpl_data = read_csv("https://raw.githubusercontent.com/azalecki/Zalecki-2023/main/data/raw/public/CPL-Locations.csv")
+
+# Create points layer using coordinate column and set projection to UTM Zone 16 
+
+points <- cpl_data %>%
+  st_as_sf(coords = c("Longitude", "Latitude")) %>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+# Check class and geometry type of data 
+
+class(points)
+st_geometry_type(points)
+
+# Create a multipoint layer from points layer 
+multipoint <- st_combine(points)
+
+# Check geometry type 
+st_geometry_type(multipoint)
+
+# Plot points on map with Chicago boundary 
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = chi, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
+  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
+
+```
+
+### Blocks with Pop Data 
+
+```{r pop-blocks}
+
+# Query 2020 Census population data with Census block boundaries 
+
+blocks <- get_decennial(
+  geography = "block",
+  table = "P1",
+  county = "Cook",
+  state = "IL",
+  year = 2020,
+  output = "wide",
+  cache_table = TRUE,
+  geometry = TRUE,
+  keep_geo_vars = TRUE) %>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+#attributes(blocks)
+# Plot block data on the map 
+
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = blocks, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+
+```
+
+
+## Data transformations
+
+### Filter ACS Data and Clip by Chicago Boundary 
+```{r filter-chi}
+
+
+
+chi_tracts <- st_intersection(fc_acs, chi)%>%
+  st_make_valid()
+
+#class(chi_tracts)
+
+chi_tracts_map <- leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = chi_tracts, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+
+chi_tracts_map
+```
+
+### ACS data transformations
+
+```{r acs-filter}
+# some of the variables need to be divided into bins like age and income 
+
+#tract data needs to be clipped/filtered by Chicago bounds
+```
+
+
+### Library Catchment Areas
+
+```{r voronoi-polygons}
+
+vor1 <- st_union(points)%>%
+  st_voronoi()%>%
+  st_collection_extract("POLYGON")
+
+vor_chi <- st_intersection(vor1, chi)
+    
+
+plot(vor1)
+plot(vor_chi)
+
+
+leaflet() %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(data = vor_chi, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)%>%
+  addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
+
+```
+
+
+### Filter Population Blocks 
+```{r filter-blocks}
+
+# Filter out block with no population data 
+blocks_pop <- blocks %>%
+  dplyr::filter(POP20 >= 1)
+
+# Clip blocks by Chicago Boundary 
+chi_pop <- st_intersection(blocks_pop, chi)%>%
+  select(TRACTCE20, BLOCKCE20, GEOID,ALAND20, AWATER20, HOUSING20, POP20)
+
+#Plot on map
+#plot(chi_pop)
+hist(chi_pop$POP20)
+#leaflet() %>% 
+  #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  #addPolygons(data = pop, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+
+
+```
+
+
+## Prior observations  
+
+Prior experience with the study area, prior data collection, or prior observation of the data can compromise the validity of a study, e.g. through p-hacking.
+Therefore, disclose any prior experience or observations at the time of study pre-registration here, with example text below:
+
+At the time of this study pre-registration, the authors had _____ prior knowledge of the geography of the study region with regards to the ____ phenomena to be studied.
+This study is related to ____ prior studies by the authors
+
+For each primary data source, declare the extent to which authors had already engaged with the data:
+
+- [ ] no data collection has started
+- [ ] pilot test data has been collected
+- [ ] data collection is in progress and data has not been observed
+- [ ] data collection is in progress and __% of data has been observed
+- [ ] data collection is complete and data has been observed. Explain how authors have already manipulated / explored the data.
+
+For each secondary source, declare the extent to which authors had already engaged with the data:
+
+- [ ] data is not available yet
+- [ ] data is available, but only metadata has been observed
+- [ ] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
+
+If pilot test data has been collected or acquired, describe how the researchers observed and analyzed the pilot test, and the extent to which the pilot test influenced the research design.
+
+## Bias and threats to validity
+
+Given the research design and primary data to be collected and/or secondary data to be used, discuss common threats to validity and the approach to mitigating those threats, with an emphasis on geographic threats to validity.
+
+These include:
+  - uneven primary data collection due to geographic inaccessibility or other constraints
+  - multiple hypothesis testing
+  - edge or boundary effects
+  - the modifiable areal unit problem
+  - nonstationarity
+  - spatial dependence or autocorrelation
+  - temporal dependence or autocorrelation
+  - spatial scale dependency
+  - spatial anisotropies
+  - confusion of spatial and a-spatial causation
+  - ecological fallacy
+  - uncertainty e.g. from spatial disaggregation, anonymization, differential privacy
+
+## Data transformations
+
+Describe all data transformations planned to prepare data sources for analysis.
+This section should explain with the fullest detail possible how to transform data from the **raw** state at the time of acquisition or observation, to the pre-processed **derived** state ready for the main analysis.
+Including steps to check and mitigate sources of **bias** and **threats to validity**.
+The method may anticipate **contingencies**, e.g. tests for normality and alternative decisions to make based on the results of the test.
+More specifically, all the **geographic** and **variable** transformations required to prepare input data as described in the data and variables section above to match the study's spatio-temporal characteristics as described in the study metadata and study design sections.
+Visual workflow diagrams may help communicate the methodology in this section.
+
+Examples of **geographic** transformations include coordinate system transformations, aggregation, disaggregation, spatial interpolation, distance calculations, zonal statistics, etc.
+
+Examples of **variable** transformations include standardization, normalization, constructed variables, imputation, classification, etc.
+
+Be sure to include any steps planned to **exclude** observations with *missing* or *outlier* data, to **group** observations by *attribute* or *geographic* criteria, or to **impute** missing data or apply spatial or temporal **interpolation**.
+
+## Analysis
+
+Describe the methods of analysis that will directly test the hypotheses or provide results to answer the research questions.
+This section should explicitly define any spatial / statistical *models* and their *parameters*, including *grouping* criteria, *weighting* criteria, and *significance thresholds*.
+Also explain any follow-up analyses or validations.
+
+# Results
+
+Describe how results are to be presented.
+
+# Discussion
+
+Describe how the results are to be interpreted *vis a vis* each hypothesis or research question.
+
+# Integrity Statement
+
+Include an integrity statement - The authors of this preregistration state that they completed this preregistration to the best of their knowledge and that no other preregistration exists pertaining to the same hypotheses and research.
+If a prior registration *does* exist, explain the rationale for revising the registration here.
+
+
+This report is based upon the template for Reproducible and Replicable Research in Human-Environment and Geographical Sciences, DOI:[10.17605/OSF.IO/W29MQ](https://doi.org/10.17605/OSF.IO/W29MQ)
+
+# References
