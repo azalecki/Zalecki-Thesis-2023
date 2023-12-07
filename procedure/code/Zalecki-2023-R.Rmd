@@ -149,33 +149,36 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
 # Query Sociol & Demographic data with Census tract boundaries
 
-# Age and Sex Table 
+ # Age and Sex Table 
 
- as_acs <- get_acs(
-   geography = "tract",
-   table = "S0101",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # as_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "S0101",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-# Educational Attainment Table 
 
- edu_acs <- get_acs(
-   geography = "tract",
-   table = "B15003",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # Race
+ 
+ # Educational Attainment Table 
+
+ # edu_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "B15003",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
  # School Enrollment 
  
@@ -221,31 +224,31 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
  
 # Language Spoken at Home
  
- lang_acs <- get_acs(
-   geography = "tract",
-   table = "B16002",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # lang_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "B16002",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
  
 # Computers at Home
  
- comp_acs <- get_acs(
-   geography = "tract",
-   table = "B28010",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # comp_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "B28010",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
  
  # Household Income  
 inc_acs <- get_acs(
@@ -264,6 +267,9 @@ inc_acs <- get_acs(
 
 # Save query results
 
+saveRDS(emp_acs, here("data", "raw", "public", "emp_acs.RDS"))
+saveRDS(enr_acs, here("data", "raw", "public", "emp_acs.RDS"))
+saveRDS(in_acs, here("data", "raw", "public", "emp_acs.RDS"))
 saveRDS(emp_acs, here("data", "raw", "public", "emp_acs.RDS"))
 
 # Plot one of the tables on the map to test that tracts show up 
@@ -401,17 +407,60 @@ Be sure to include any steps planned to **exclude** observations with *missing* 
 
 ### Filter ACS Data and Clip by Chicago Boundary
 
+```{r test-newbins}
+
+# Make new bins for School Enrollment by level of school 
+# se1: highschool or under | se2: undergraduate or graduate or professional school | se3: not enrolled in school 
+
+enr_acs$se1 <- c(enr_acs$B14001_003E + enr_acs$B14001_004E + enr_acs$B14001_005E + enr_acs$B14001_006E + enr_acs$B14001_006E)
+
+enr_acs$se2 <- c(enr_acs$B14001_008E + enr_acs$B14001_009E)
+
+enr_acs$se3 <- c(enr_acs$B14001_010E)
+
+# Make new columns for Employment status 
+# emp1 : civilian labor employed | emp0: civilian labor unemployed 
+
+emp_acs$emp0 <- c(emp_acs$B23025_007E)
+emp_acs$emp1 <- c(emp_acs$B23025_002E)
+# Rename columns for Nativity data. I don't need to add anything up here. 
+
+# Make new columns for Household Income 
+# hhi1: under 25k | hhi2: 25k - 49.9k | hhi3: 50k - 74.9k | hhi4: 75k - 99.9k | hhi5: 100k - 149.9k | hhi6: 150k - 199.9k | hhi7: over 200k
+
+inc_acs$hhi1 <- c(inc_acs$B19001_002E + inc_acs$B19001_003E + inc_acs$B19001_004E + inc_acs$B19001_005E)
+inc_acs$hhi2 <- c(inc_acs$B19001_006E + inc_acs$B19001_007E + inc_acs$B19001_008E + inc_acs$B19001_009E + inc_acs$B19001_010E)
+inc_acs$hhi3 <- c(inc_acs$B19001_011E +inc_acs$B19001_012E)
+inc_acs$hhi4 <- c(inc_acs$B19001_013E)
+inc_acs$hhi5 <- c(inc_acs$B19001_014E + inc_acs$B19001_015E)
+inc_acs$hhi6 <- c(inc_acs$B19001_016E)
+inc_acs$hhi7 <- c(inc_acs$B19001_017E) 
+
+# Make new columns for Nativity status
+# for0: native born | for1: foreign born 
+
+nat_acs$for0 <- c(nat_acs$B05012_002E)
+nat_acs$for1 <- c(nat_acs$B05012_003E)
+
+```
 
 ```{r acs-filter}
 # filter acs data by the columns that you want and make any new columns that you need 
-# inner_join() dyplr function to join be tract id 
+tabletest <- inc_acs %>%
+  dplyr::select(STATEFP, COUNTYFP, TRACTCE,GEOID, NAME.x, ALAND, AWATER, geometry, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
+
+tabletest2 <- emp_acs %>%
+  dplyr::select(emp0, emp1)
+
+# st_join to join tables 
+
+tabletest3 <- st_join(tabletest, tabletest2)
+
 ```
-
-
 
 ```{r tracts-clip-chi}
 
-chi_tracts <- st_intersection(emp_acs, chi)%>%
+chi_tracts <- st_intersection(tabletest3, chi)%>%
   st_collection_extract("POLYGON")
 
 #class(chi_tracts)
@@ -452,11 +501,11 @@ voronoi_m
 
 # Filter out blocks with no population data 
 blocks_pop <- blocks %>%
-  dplyr::filter(POP20 >= 1)
+  dplyr::filter(POP20 > 0)
 
 # Clip blocks by Chicago Boundary 
 chi_pop <- st_as_sf(st_intersection(blocks_pop, chi)%>%
-  select(TRACTCE20, BLOCKCE20, GEOID,ALAND20, AWATER20, HOUSING20, POP20))%>%
+  select(TRACTCE20, BLOCKCE20, GEOID, ALAND20, AWATER20, HOUSING20, POP20))%>%
   st_collection_extract("POLYGON")
 
 #st_geometry_type(chi_pop)
@@ -502,26 +551,39 @@ centroids_m
 ```{r pop-agg}
 # Join block centroids to tracts 
 
+tracts_pop <- st_join(tabletest3, centroids)
+
 # Intersect tracts with Voronoi polygons 
+
+vorclip_tracts <- st_intersection(tracts_pop, vor_chi)%>%
+  st_collection_extract("POLYGON")
+
+# Plot the centroids on the map
+
+# tp_m <- leaflet() %>% 
+#                 addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+#                 addPolygons(data = vorclip_tracts, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)
+# 
+# tp_m
 
 # Join block centroids to new intersection polygons 
 
 # Calculate proportion of population 
 
 
-output <- mutate(input_data,propPop = oPOP20 / POP20)
+# output <- mutate(input_data,propPop = secPOP20 / POP20)
 
 #Apply proportion to all data counts 
 
-outpit <- mutate(input_data, 
-          white_w = column * propPOp, 
-          black_w = column * propPop, 
-          native_w = column * propPop,
-          asian_w = column * propPop, 
-          other_pct = column * propPop, 
-          non_hisp_white_w = column * propPop, 
-          hisp_w = column * propPop, 
-          non_hisp_nwhite_w = column * propPop, 
+# outpit <- mutate(input_data, 
+#           white_w = column * propPOp, 
+#           black_w = column * propPop, 
+#           native_w = column * propPop,
+#           asian_w = column * propPop, 
+#           other_pct = column * propPop, 
+#           non_hisp_white_w = column * propPop, 
+#           hisp_w = column * propPop, 
+#           non_hisp_nwhite_w = column * propPop, 
          #count of employed 
          #count of unemployed 
          #count of families living in poverty
@@ -529,7 +591,7 @@ outpit <- mutate(input_data,
          #fborn 
          #edu attainment 
          #etc.
-          )
+         # )
 
 
 ```
