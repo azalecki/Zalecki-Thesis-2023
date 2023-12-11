@@ -16,7 +16,7 @@ Rising inequality and increased privatization of space in urban landscapes is br
 
 ## Study Metadata
 
-- `Key words`: public space, library programs, inequality, gis
+- `Key words`: public space, libraries, population weighted aggregation, service areas, demographics 
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
 - `Date created`: 11/28/2023
 - `Date modified`: 12/5/2023
@@ -110,8 +110,8 @@ Describe the **data sources** and **variables** to be used.
 Data sources may include plans for observing and recording **primary data** or descriptions of **secondary data**.
 For secondary data sources with numerous variables, the analysis plan authors may focus on documenting only the variables intended for use in the study.
 
-Primary data sources for the study are to include ... .
-Secondary data sources for the study are to include ... .
+
+Secondary data sources for the study are to include...
 
 Each of the next subsections describes one data source.
 
@@ -136,7 +136,8 @@ class(chi)
 ```
 
 ### American Community Survey Data
-
+I will add a more comprehensive list of variables as my senior research project progresses but for this reproduction I started of with these prelimenary variables. 
+[include table here]
 ```{r acs-data, install = TRUE}
 
 #Load in Census API Key. To get your own key visit this website: 
