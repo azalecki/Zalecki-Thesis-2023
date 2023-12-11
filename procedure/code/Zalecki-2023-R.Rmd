@@ -278,10 +278,10 @@ saveRDS(nat_acs, here("data", "raw", "public", "nat_acs.RDS"))
 
 ```{r load-acs}
 
-in_acs <- readRDS(here("data", "raw", "public", "inc_acs.RDS"))
-emp_acs <- readRDS(here("data", "raw", "public", "emp_acs.RDS"))
-nat_acs <- readRDS(here("data", "raw", "public", "nat_acs.RDS"))
-enr_acs <- readRDS(here("data", "raw", "public", "enr_acs.RDS"))
+#in_acs <- readRDS(here("data", "raw", "public", "inc_acs.RDS"))
+#emp_acs <- readRDS(here("data", "raw", "public", "emp_acs.RDS"))
+#nat_acs <- readRDS(here("data", "raw", "public", "nat_acs.RDS"))
+#enr_acs <- readRDS(here("data", "raw", "public", "enr_acs.RDS"))
 ```
 
 ### Libraries
@@ -658,19 +658,19 @@ intersect_pop <- st_join(vorclip_tracts, centroids)
 
 # Summarize population by intersected tracts 
 
-int_grp_tract <- intersect_pop %>%
-                group_by(TRACTCE) %>%
-                summarise(sum_pop2 = sum(POP20))
+#int_grp_tract <- intersect_pop %>%
+               # group_by(TRACTCE) %>%
+               # summarise(sum_pop2 = sum(POP20.x))
 
 # Map!
-qpal3 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), int_grp_tract$sum_pop2, n = 10)
+#qpal3 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), int_grp_tract$sum_pop2, n = 10)
 
-int_grp_tract_m <- leaflet() %>% 
-              addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-              addPolygons(data = int_grp_tract, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal3(sum_pop2))
+#int_grp_tract_m <- leaflet() %>% 
+           #   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+           #   addPolygons(data = int_grp_tract, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal3(sum_pop2))
               
 
-int_grp_tract_m
+#int_grp_tract_m
 
 ```
 
