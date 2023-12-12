@@ -10,10 +10,10 @@ Rising inequality and increased privatization of space in urban landscapes is br
 
 ### Study Metadata
 
-- `Key words`: public space, library programs, inequality, gis
+- `Key words`: public space, libraries, population weighted aggregation, service areas, demographics 
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
 - `Date created`: 11/28/2023
-- `Date modified`: 12/5/2023
+- `Date modified`: 12/12/2023
 - `Spatial Coverage`: Chicago, IL
 - `Spatial Resolution`: Census Tracts, Census Blocks, Library Service Areas
 - `Spatial Reference System`: EPSG:32616 
