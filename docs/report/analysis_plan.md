@@ -67,7 +67,7 @@ Population data at the census block level is derived from the US Decennial Censu
 **Standard Metadata**
 
 - `Abstract`: Brief description of the data source
-- `Spatial Coverage`: Chicago, IL
+- `Spatial Coverage`: Cook County, IL
 - `Spatial Resolution`: Census tracts
 - `Spatial Reference System`: EPSG:32616
 - `Temporal Coverage`: 2017-2021
@@ -99,26 +99,26 @@ Population data at the census block level is derived from the US Decennial Censu
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 
-#### Population Data US Census 
+#### Census Blocks for Cook County, IL  
 
 **Standard Metadata**
 
 - `Abstract`: Brief description of the data source
-- `Spatial Coverage`: Specify the geographic extent of your study. This may be a place name and link to a feature in a gazetteer like GeoNames or OpenStreetMap, or a well known text (WKT) representation of a bounding box.
-- `Spatial Resolution`: Specify the spatial resolution as a scale factor, description of the level of detail of each unit of observation (including administrative level of administrative areas), and/or or distance of a raster GRID size
-- `Spatial Reference System`: Specify the geographic or projected coordinate system for the study
-- `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
-- `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
-- `Lineage`: Describe and/or cite data sources and/or methodological steps used to create this data source
-- `Distribution`: Describe how the data is distributed, including any persistent identifier (e.g. DOI) or URL for data access
+- `Spatial Coverage`: Cook County, IL
+- `Spatial Resolution`: Census Blocks
+- `Spatial Reference System`: EPSG:32616
+- `Temporal Coverage`: 2010-2020
+- `Temporal Resolution`: N/A
+- `Lineage`: Retrieved using Tidecensus R Package
+- `Distribution`: Distributed by the US Census Bureau
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
-- `Data Quality`: State result of quality assessment or state "Quality unknown"
+- `Data Quality`: Quality unknown
 - `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
-  - `Label`: variable name as used in the data or code
-  - `Alias`: intuitive natural language name
-  - `Definition`: Short description or definition of the variable. Include measurement units in description.
-  - `Type`: data type, e.g. character string, integer, real
-  - `Accuracy`: e.g. uncertainty of measurements
+  - `Label`: POP20
+  - `Alias`: Total Population
+  - `Definition`: 2020 Census population count
+  - `Type`: Integer
+  - `Accuracy`: N/A
   - `Domain`: Range (Maximum and Minimum) of numerical data, or codes or categories of nominal data, or reference to a standard codebook
   - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
   - `Missing Data Frequency`: Frequency of missing data observations
@@ -164,7 +164,10 @@ http://chipublib.org). Retrieved from the [City of Chicago Data Portal](https://
 | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
 | variable1 | ... | ... | ... | ... | ... | ... | ... |
 | variable2 | ... | ... | ... | ... | ... | ... | ... |
-
+| variable1 | ... | ... | ... | ... | ... | ... | ... |
+| variable2 | ... | ... | ... | ... | ... | ... | ... |
+| variable1 | ... | ... | ... | ... | ... | ... | ... |
+| variable2 | ... | ... | ... | ... | ... | ... | ... |
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
