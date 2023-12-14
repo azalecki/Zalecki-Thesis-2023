@@ -6,7 +6,7 @@
 
 ### Abstract
 
-Rising inequality and increased privatization of space in urban landscapes are bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL, and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two-pronged method that aims to answer the question of to what extent the catchment areas are distinct. 
+Rising inequality and increased privatization of space in urban landscapes are bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL, and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two-pronged method that aims to explore how public library services reflect the characteristics of their local neighborhoods. 
 
 ### Study Metadata
 
@@ -22,7 +22,7 @@ Rising inequality and increased privatization of space in urban landscapes are b
 
 ## Study design
 
-TThis is an **original study**. 
+This is an **original study**. 
 
 
 This workflow is the first part of my senior research project that explores the question of how library service catchment areas differ along demographic lines in Chicago, IL. This workflow was originally part of my independent research work with Professor Peter Nelson during the Fall semester of 2023 which I created and implemented in QGIS.To improve the methods for this research and make it reproducible/replicable I decided to reproduce the QGIS workflow in R Studio. 
@@ -45,15 +45,15 @@ Socioeconomic data at the census tract level is derived from the American Commun
 
 Population data at the census block level is derived from the US Decennial Census(released in 2020) collected by the US Census Bureau.
 
-### Chicago.shp 
-- `Abstract`: Brief description of the data source
+### Chicago Shapefile  
+- `Abstract`: TIGER/Line shapefile of the city boundaries of Chicago, IL. Does not include any demographic data. 
 - `Spatial Coverage`: Chicago, IL
 - `Spatial Resolution`: Census-designated place
 - `Spatial Reference System`: EPSG:32616
 - `Temporal Coverage`: 2017-2021
 - `Temporal Resolution`: N/A
-- `Lineage`: Retrieved using the Tigris R package
-- `Distribution`: Distributed by the US Census Bureau
+- `Lineage`: Retrieved using the [Tigris](https://github.com/walkerke/tigris) R package
+- `Distribution`: Distributed by the [US Census Bureau](https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html)
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
 - `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
@@ -66,17 +66,17 @@ Population data at the census block level is derived from the US Decennial Censu
   - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
   - `Missing Data Frequency`: Frequency of missing data observations
   - 
-#### ACS Socioeconomic Data 
+#### American Community Survey(ACS) Demographic Data 
 
 **Standard Metadata**
 
-- `Abstract`: Brief description of the data source
+- `Abstract`: [The American Community Survey](https://www.census.gov/data/developers/data-sets/acs-5year.html) provides data yearly regarding the social, economic, demographic, and housing characteristics of the US population. This study will pull from several subject tables that will then be grouped by Tract ID. 
 - `Spatial Coverage`: Cook County, IL
 - `Spatial Resolution`: Census tracts
 - `Spatial Reference System`: EPSG:32616
 - `Temporal Coverage`: 2017-2021
 - `Temporal Resolution`: N/A
-- `Lineage`: Retrieved using the Tidycensus R package
+- `Lineage`: Retrieved using the [Tidycensus](https://github.com/walkerke/tidycensus) R package
 - `Distribution`: Distributed by the US Census Bureau
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
@@ -99,11 +99,11 @@ Population data at the census block level is derived from the US Decennial Censu
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
 - [ ] metadata and descriptive statistics have been observed
-- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 
-#### Census Blocks for Cook County, IL  
+#### Population Data and Census Blocks for Cook County, IL  
 
 **Standard Metadata**
 
@@ -113,8 +113,8 @@ Population data at the census block level is derived from the US Decennial Censu
 - `Spatial Reference System`: EPSG:32616
 - `Temporal Coverage`: 2010-2020
 - `Temporal Resolution`: N/A
-- `Lineage`: Retrieved using Tidecensus R Package
-- `Distribution`: Distributed by the US Census Bureau
+- `Lineage`: Retrieved using the [Tidycensus](https://github.com/walkerke/tidycensus) R package
+- `Distribution`: [TIGER/Line](https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html) shapefiles are distributed by the US Census Bureau
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
 - `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
@@ -125,25 +125,19 @@ Population data at the census block level is derived from the US Decennial Censu
   - `Accuracy`: N/A
   - `Domain`: Range (Maximum and Minimum) of numerical data, or codes or categories of nominal data, or reference to a standard codebook
   - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
-  - `Missing Data Frequency`: Frequency of missing data observations
-
-| Label | Alias | Definition | Type | Accuracy | Domain | Missing Data Value(s) | Missing Data Frequency |
-| :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-| variable1 | ... | ... | ... | ... | ... | ... | ... |
-| variable2 | ... | ... | ... | ... | ... | ... | ... |
-
+  - `Missing Data Frequency`: N/A
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
 - [ ] metadata and descriptive statistics have been observed
-- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 #### Public Library Locations
 
 **Standard Metadata**
 
-- `Abstract`: Data table of Chicago Public Library locations (address and long/lat coordinates), usual hours of operation, websites, and contact information 
+- `Abstract`: Data table of Chicago Public Library locations (addresses and long/lat coordinates), usual hours of operation, websites, and contact information 
 - `Spatial Coverage`: Chicago, IL
 - `Spatial Resolution`: Library address points
 - `Spatial Reference System`: EPSG:32616
@@ -176,7 +170,7 @@ http://chipublib.org). Retrieved from the [City of Chicago Data Portal](https://
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
 - [ ] metadata and descriptive statistics have been observed
-- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 ### Bias and threats to validity
