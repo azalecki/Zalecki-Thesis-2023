@@ -36,23 +36,20 @@ This study will be completed using The R Project for Statistical Computing v.[] 
 
 ### Data and variables
 
-Socioeconomic data at the census tract level is derived from the American Community Survey 5 year estimates (released in 2021) collected by the US Census Bureau. 
+Socioeconomic data at the census tract level is derived from the American Community Survey 5-year estimates (released in 2021) collected by the US Census Bureau. 
 
-Population data at the census block level is derivced from the US Decennial Census(released in 2020) collected by the US Census Bureau.
+Population data at the census block level is derived from the US Decennial Census(released in 2020) collected by the US Census Bureau.
 
-Chicago Public Library addresses were derived from the City of Chicago Data Portal. 
-
-Public Library address data was derived from the City of Chicago Data Portal https://data.cityofchicago.org/Education/Libraries-Locations-Contact-Information-and-Usual-/x8fc-8rcq
 
 ### Chicago.shp 
 - `Abstract`: Brief description of the data source
-- `Spatial Coverage`: Specify the geographic extent of your study. This may be a place name and link to a feature in a gazetteer like GeoNames or OpenStreetMap, or a well known text (WKT) representation of a bounding box.
-- `Spatial Resolution`: Specify the spatial resolution as a scale factor, description of the level of detail of each unit of observation (including administrative level of administrative areas), and/or or distance of a raster GRID size
-- `Spatial Reference System`: Specify the geographic or projected coordinate system for the study
-- `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
-- `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
-- `Lineage`: Describe and/or cite data sources and/or methodological steps used to create this data source
-- `Distribution`: Describe how the data is distributed, including any persistent identifier (e.g. DOI) or URL for data access
+- `Spatial Coverage`: Chicago, IL
+- `Spatial Resolution`: Census-designated place
+- `Spatial Reference System`: EPSG:32616
+- `Temporal Coverage`: 2017-2021
+- `Temporal Resolution`: N/A
+- `Lineage`: Retrieved using the Tigris R package
+- `Distribution`: Distributed by the US Census Bureau
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
 - `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
@@ -70,13 +67,13 @@ Public Library address data was derived from the City of Chicago Data Portal htt
 **Standard Metadata**
 
 - `Abstract`: Brief description of the data source
-- `Spatial Coverage`: Specify the geographic extent of your study. This may be a place name and link to a feature in a gazetteer like GeoNames or OpenStreetMap, or a well known text (WKT) representation of a bounding box.
-- `Spatial Resolution`: Specify the spatial resolution as a scale factor, description of the level of detail of each unit of observation (including administrative level of administrative areas), and/or or distance of a raster GRID size
-- `Spatial Reference System`: Specify the geographic or projected coordinate system for the study
-- `Temporal Coverage`: Specify the temporal extent of your study---i.e. the range of time represented by the data observations.
-- `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
-- `Lineage`: Describe and/or cite data sources and/or methodological steps used to create this data source
-- `Distribution`: Describe how the data is distributed, including any persistent identifier (e.g. DOI) or URL for data access
+- `Spatial Coverage`: Chicago, IL
+- `Spatial Resolution`: Census tracts
+- `Spatial Reference System`: EPSG:32616
+- `Temporal Coverage`: 2017-2021
+- `Temporal Resolution`: N/A
+- `Lineage`: Retrieved using the Tidycensus R package
+- `Distribution`: Distributed by the US Census Bureau
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
 - `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
