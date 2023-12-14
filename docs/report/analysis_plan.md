@@ -6,11 +6,11 @@
 
 ### Abstract
 
-Rising inequality and increased privatization of space in urban landscapes are bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two pronged methods that aims to answer the question of to what extent the catchment areas are distinct. 
+Rising inequality and increased privatization of space in urban landscapes are bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL, and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two-pronged method that aims to answer the question of to what extent the catchment areas are distinct. 
 
 ### Study Metadata
 
-- `Key words`: public space, libraries, population weighted aggregation, service areas, demographics 
+- `Key words`: public space, libraries, population-weighted aggregation, service areas, demographics 
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
 - `Date created`: 11/28/2023
 - `Date modified`: 12/12/2023
@@ -22,24 +22,28 @@ Rising inequality and increased privatization of space in urban landscapes are b
 
 ## Study design
 
-This study is a reproduction of my own **an original study**. As part of my independent research work with Professor Peter Nelson, I created a workflow in QGIS to answer the question: How do library service catchment areas deiffer along lines of race, class, gender, etc? In order to streamline this research and make it reproducible/replicable I decided to reproduce the workflow in R and create a research compendium for it as part of my final independent project in GEOG0361: Open GIScience.
+TThis is an **original study**. 
 
-Enumerate specific **hypotheses** to be tested or **research questions** to be investigated here, and specify the type of method, statistical test or model to be used on the hypothesis or question.
 
-This research aims to answer the following two questions. How do library service catchment areas differ along lines of race, class, gender, etc. How do the public services in these catchment areas reflect the nature of their local constituents? 
+This workflow is the first part of my senior research project that explores the question of how library service catchment areas differ along demographic lines in Chicago, IL. This workflow was originally part of my independent research work with Professor Peter Nelson during the Fall semester of 2023 which I created and implemented in QGIS.To improve the methods for this research and make it reproducible/replicable I decided to reproduce the QGIS workflow in R Studio. 
+
+This part of the study will accomplish the following:
+1.	Locate libraries in Chicago, IL and delineate their service areas.
+2.	Characterize the neighborhoods that they serve using socioeconomic and demographic data. 
+
+Because the final objective of my senior research project is to explore the services and programmatic differences between Chicago's library branches, the results of this study will be used to draw comparisons between a library and the neighborhood it serves and identify library branches in particularly distinct neighborhoods. 
 
 ## Materials and procedure
 
 ### Computational environment
 
-This study will be completed using The R Project for Statistical Computing v.[] or later. The research will be completed on the Windows 10 operating system. A complete list of required R packages will be reported with the final report. 
+This study will be completed using The R Project for Statistical Computing v.[4.3.2] or later. The research will be completed on the Windows 10 operating system. A complete list of required R packages will be reported with the final report. 
 
 ### Data and variables
 
 Socioeconomic data at the census tract level is derived from the American Community Survey 5-year estimates (released in 2021) collected by the US Census Bureau. 
 
 Population data at the census block level is derived from the US Decennial Census(released in 2020) collected by the US Census Bureau.
-
 
 ### Chicago.shp 
 - `Abstract`: Brief description of the data source
