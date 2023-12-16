@@ -54,6 +54,12 @@ Population data at the census block level is derived from the US Decennial Censu
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
 
+- [ ] data is not available yet
+- [ ] data is available, but only metadata has been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
+
 #### American Community Survey(ACS) Demographic Data 
 
 **Standard Metadata**
@@ -71,8 +77,8 @@ Population data at the census block level is derived from the US Decennial Censu
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
-- [ ] metadata and descriptive statistics have been observed
-- [X] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 
@@ -102,8 +108,8 @@ Population data at the census block level is derived from the US Decennial Censu
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
-- [ ] metadata and descriptive statistics have been observed
-- [X] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 #### Public Library Locations
@@ -124,8 +130,8 @@ http://chipublib.org). Retrieved from the [City of Chicago Data Portal](https://
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
-- [ ] metadata and descriptive statistics have been observed
-- [X] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 ### Bias and threats to validity
