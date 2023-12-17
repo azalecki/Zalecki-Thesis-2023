@@ -30,8 +30,6 @@ Rising inequality and increased privatization of space in urban landscapes is br
 
 This study is a reproduction of my own **an original study**. As part of my independent research work with Professor Peter Nelson, I created a workflow in QGIS to answer the question: How do library service catchment areas differ along lines of race, class, gender, etc? In order to streamline this research and make it reproducible/replicable I decided to reproduce the workflow in R and create a research compendium for it as part of my final independent project in GEOG0361: Open GIScience.
 
-Enumerate specific **hypotheses** to be tested or **research questions** to be investigated here, and specify the type of method, statistical test or model to be used on the hypothesis or question.
-
 This research aims to answer the following two questions. How do library service catchment areas differ along lines of race, class, gender, etc. How do the public services in these catchment areas reflect the nature of their local constituents? 
 
 
@@ -39,7 +37,7 @@ This research aims to answer the following two questions. How do library service
 
 ## Computational environment
 
-```{r environment-setup, include = FALSE}
+```{r environment-setup, warning = FALSE}
 # record all the packages you are using here
 # this includes any calls to library(), require(),
 # and double colons such as here::i_am()
@@ -106,18 +104,11 @@ knitr::opts_chunk$set(
 
 ## Data and variables
 
-Describe the **data sources** and **variables** to be used.
-Data sources may include plans for observing and recording **primary data** or descriptions of **secondary data**.
-For secondary data sources with numerous variables, the analysis plan authors may focus on documenting only the variables intended for use in the study.
-
-
-Secondary data sources for the study are to include...
-
 Each of the next subsections describes one data source.
+Secondary data sources for the study are to include the following: 
 
-
-### Chicago Boundary 
-```{r chicago-bounds}
+### Chicago Shapefile 
+```{r chicago-bounds, results = "hide"}
 # Load in all places defined by the US Census 
 il_places <- places(state = "IL")
 
@@ -130,21 +121,22 @@ chi <- il_places %>%
 
 # Plot geometry and check geometry/data type
 plot(chi$geometry)
-st_geometry_type(chi)
-class(chi)
+#st_geometry_type(chi)
+#class(chi)
 
 ```
 
-### American Community Survey Data
-I will add a more comprehensive list of variables as my senior research project progresses but for this reproduction I started of with these prelimenary variables. 
-[include table here]
-```{r acs-data, install = TRUE}
+### American Community Survey(ACS) Demographic Data 
+
+I will add a more comprehensive list of variables as my senior research project progresses but in this code I will be working with one table: Household Income. I initially attempted to create a data table with variables from several tables but due to my very rudimentary skills in R, I was not successful in doing so. In order to keep moving forward with the code I had to simplify the project a little bit and work with only one of the data tables.
+
+```{r acs-data, install = TRUE, warning = FALSE, results = "hide"}
 
 #Load in Census API Key. To get your own key visit this website: 
 
 census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
-# Query Sociol & Demographic data with Census tract boundaries
+# Query Social & Demographic data with Census tract boundaries
 
  # Age and Sex Table 
 
@@ -165,59 +157,59 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
  
  # Educational Attainment Table 
 
- edu_acs <- get_acs(
-   geography = "tract",
-   table = "B15003",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # edu_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "B15003",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
  # School Enrollment 
  
- enr_acs <- get_acs(
-   geography = "tract",
-   table = "B14001",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # enr_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "B14001",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
  
 # Employment table 
 
- emp_acs <- get_acs(
-   geography = "tract",
-   table = "B23025",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # emp_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "B23025",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
  
 # Nativity table 
  
- nat_acs <- get_acs(
-   geography = "tract",
-   table = "B05012",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE)%>%
-  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+ # nat_acs <- get_acs(
+ #   geography = "tract",
+ #   table = "B05012",
+ #   county = "Cook",
+ #   state = "IL",
+ #   year = 2021,
+ #   output = "wide",
+ #   cache_table = TRUE,
+ #   geometry = TRUE,
+ #   keep_geo_vars = TRUE)%>%
+ #  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
  
 # Language Spoken at Home
  
@@ -264,30 +256,23 @@ inc_acs <- get_acs(
 
 # Save query results
 
-saveRDS(emp_acs, here("data", "raw", "public", "emp_acs.RDS"))
-saveRDS(enr_acs, here("data", "raw", "public", "emp_acs.RDS"))
-saveRDS(inc_acs, here("data", "raw", "public", "emp_acs.RDS"))
-saveRDS(nat_acs, here("data", "raw", "public", "nat_acs.RDS"))
+# saveRDS(emp_acs, here("data", "raw", "public", "emp_acs.RDS"))
+# saveRDS(enr_acs, here("data", "raw", "public", "emp_acs.RDS"))
+# saveRDS(inc_acs, here("data", "raw", "public", "emp_acs.RDS"))
+# saveRDS(nat_acs, here("data", "raw", "public", "nat_acs.RDS"))
 
 # Plot one of the tables on the map to test that tracts show up 
 
 #leaflet() %>% 
   #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-  #addPolygons(data = fc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+  #addPolygons(data = inc_acs, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
 
 ```
 
-```{r load-acs}
 
-#in_acs <- readRDS(here("data", "raw", "public", "inc_acs.RDS"))
-#emp_acs <- readRDS(here("data", "raw", "public", "emp_acs.RDS"))
-#nat_acs <- readRDS(here("data", "raw", "public", "nat_acs.RDS"))
-#enr_acs <- readRDS(here("data", "raw", "public", "enr_acs.RDS"))
-```
-
-### Libraries
-
-```{r cpl-data}
+### Public Library Locations
+Data for Chicago Public Library locations comes in CSV format with coordinate data. Prior to uploading the CSV file into the Github site I used Microsoft Excel to manually seperate the Longitude and Latitude values into two separate columns. No other data manipulation was done in Excel. 
+```{r cpl-data, warning = FALSE}
 
 #Load Chicago Public Library addresses from CSV file found in Folder: data/raw/public/CPL-Locations.csv
 
@@ -314,9 +299,9 @@ cpl_points_m
 
 ```
 
-### Census Block Data 
-
-```{r pop-blocks}
+### Population Data and Census Blocks for Cook County, IL   
+Because, the ACS data tables do not come with population data I have to bring in population data seperately. My intentions for this project include a population weighted aggregation so I will be using smaller block level data to more accurately estimate population distribution. 
+```{r pop-blocks, warning = FALSE, results = "hide"}
 
 # Query block geographic data from the 2020 Census population
 
@@ -334,104 +319,89 @@ blocks <- get_decennial(
 
 # Plot block data on the map 
 
-blocks_m <- leaflet() %>% 
-              addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-              addPolygons(data = blocks, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
+#blocks_m <- leaflet() %>% 
+             # addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+             # addPolygons(data = blocks, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
 
-blocks_m
+#blocks_m
 
 ```
 
 ## Prior observations  
 
-Prior experience with the study area, prior data collection, or prior observation of the data can compromise the validity of a study, e.g. through p-hacking.
-Therefore, disclose any prior experience or observations at the time of study pre-registration here, with example text below:
-
-At the time of this study pre-registration, the authors had _____ prior knowledge of the geography of the study region with regards to the ____ phenomena to be studied.
-This study is related to ____ prior studies by the authors
-
-For each primary data source, declare the extent to which authors had already engaged with the data:
-
-- [ ] no data collection has started
-- [ ] pilot test data has been collected
-- [ ] data collection is in progress and data has not been observed
-- [ ] data collection is in progress and __% of data has been observed
-- [ ] data collection is complete and data has been observed. Explain how authors have already manipulated / explored the data.
-
-For each secondary source, declare the extent to which authors had already engaged with the data:
+**Chicago Shapefile**
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
-- [ ] metadata and descriptive statistics have been observed
+- [X] metadata and descriptive statistics have been observed
 - [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
-If pilot test data has been collected or acquired, describe how the researchers observed and analyzed the pilot test, and the extent to which the pilot test influenced the research design.
+**American Community Survey(ACS) Demographic Data** 
+
+- [ ] data is not available yet
+- [ ] data is available, but only metadata has been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
+
+**Public Library Locations**
+
+- [ ] data is not available yet
+- [ ] data is available, but only metadata has been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
+
+**Population Data and Census Blocks for Cook County, IL**  
+
+- [ ] data is not available yet
+- [ ] data is available, but only metadata has been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
+
 
 ## Bias and threats to validity
 
-Given the research design and the secondary data to be used, discuss common threats to validity and the approach to mitigating those threats, with an emphasis on geographic threats to validity.
+**Edge/shape effects when creating polygons to represent library service/catchment areas**
 
-These include:
-  - uneven primary data collection due to geographic inaccessibility or other constraints
-  - multiple hypothesis testing
-  - edge or boundary effects
-  - the modifiable areal unit problem
-  - nonstationarity
-  - spatial dependence or autocorrelation
-  - temporal dependence or autocorrelation
-  - spatial scale dependency
-  - spatial anisotropies
-  - confusion of spatial and a-spatial causation
-  - ecological fallacy
-  - uncertainty e.g. from spatial disaggregation, anonymization, differential privacy
+Visualizing catchment areas for libraries is my first objective because, unlike primary schools that have definite attendance boundaries, libraries do not have proper "service areas." In the past, Thiessen/Voronoi polygons have been used to map catchment or service areas by proximity to points. As explained by Flitter et al(nd), GIS tools that generate Thiessen polygons draw shapes around a layer of point data where every location within one shape is nearer to its center point than all other points in the layer. These proximal regions assume that people are more likely to visit the library closest to them and as a result library services should reflect their local constituents. I recognize that this method has its flaws because this is not always the case. Some people may frequent libraries outside of their residential neighborhood for a variety of reasons and there is no way of accurately tracking that. The other option would be to draw buffers around library points like in the method we saw in the Kang et al. (year) study or calculate a network analysis. Thiessen polygons are, however, the simpler and computationally less intense option to a full-on network analysis. Although they might seem arbitrary I have attempted to improve the validity by including a population-weighted aggregation to more accurately estimate the neighborhood characteristics of the library service areas.
 
 ## Data transformations
 
-Describe all data transformations planned to prepare data sources for analysis.
-This section should explain with the fullest detail possible how to transform data from the **raw** state at the time of acquisition or observation, to the pre-processed **derived** state ready for the main analysis.
-Including steps to check and mitigate sources of **bias** and **threats to validity**.
-The method may anticipate **contingencies**, e.g. tests for normality and alternative decisions to make based on the results of the test.
-More specifically, all the **geographic** and **variable** transformations required to prepare input data as described in the data and variables section above to match the study's spatio-temporal characteristics as described in the study metadata and study design sections.
-Visual workflow diagrams may help communicate the methodology in this section.
-
-Examples of **geographic** transformations include coordinate system transformations, aggregation, disaggregation, spatial interpolation, distance calculations, zonal statistics, etc.
-
-Examples of **variable** transformations include standardization, normalization, constructed variables, imputation, classification, etc.
-
-Be sure to include any steps planned to **exclude** observations with *missing* or *outlier* data, to **group** observations by *attribute* or *geographic* criteria, or to **impute** missing data or apply spatial or temporal **interpolation**.
-
 ### ACS data transformations
 
-The ACS classifies the data it collects in its own way but I wanted to reclassify it into bins to serve my purposes. I created bins/ simpler classifications for the ACS data.
-Here is a table of the new source fields I created, what I named them and what ACS data columns make up these source fields. 
+The ACS classifies the data it collects in its own way but I wanted to reclassify it into bins to serve my purposes. I created bins/ simpler classifications for the Household Income ACS data.
 
-[INSERT TABLE HERE]
-```{r new-bins}
+| Variable Name in Study | Study Label   |            Variable Used from ACS Data             |      ACS Label        | 
+|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
+|        hhi1            |  under 25k    |  B19001_002E                                       |   Less than $10,000   |
+|                        |               |  B19001_003E                                       |   $10,000 to $14,999  |
+|                        |               |  B19001_004E                                       |   $15,000 to $19,999  |
+|                        |               |  B19001_005E                                       |   $20,000 to $24,999  |
+|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
+|       hhi2             | 25k - 49.9k   |  B19001_006E                                       |  $25,000 to $29,999   |
+|                        |               |  B19001_007E                                       |  $30,000 to $34,999   |
+|                        |               |  B19001_008E                                       |  $35,000 to $39,999   |
+|                        |               |  B19001_009E                                       |  $40,000 to $44,999   |
+|                        |               |  B19001_010E                                       |  $45,000 to $49,999   |
+|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
+|         hhi3           |  50k - 74.9k  |  B19001_011E                                       |  $50,000 to $59,999   |
+|                        |               |  B19001_012E                                       |  $60,000 to $74,999   |
+|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
+|        hhi4            |  75k - 99.9k  |  B19001_013E                                       |  $75,000 to $99,999   | 
+|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
+|       hhi5             | 100k - 149.9k |  B19001_014E                                       | $100,000 to $124,999  |
+|                        |               |  B19001_015E                                       | $125,000 to $149,999  |
+|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:| 
+|        hhi6            | 150k - 199.9k |  B19001_016E                                       | $150,000 to $199,999  |
+|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
+|        hhi7            |  over 200k    |  B19001_017E                                       |  $200,000 or more     | 
 
-# Make new bins for School Enrollment by level of school 
-# se1: highschool or under | se2: undergraduate or graduate or professional school | se3: not enrolled in school 
-
-enr_acs$se1 <- c(enr_acs$B14001_003E + 
-                   enr_acs$B14001_004E + 
-                   enr_acs$B14001_005E + 
-                   enr_acs$B14001_006E + 
-                   enr_acs$B14001_006E)
-
-enr_acs$se2 <- c(enr_acs$B14001_008E + enr_acs$B14001_009E)
-
-enr_acs$se3 <- c(enr_acs$B14001_010E)
-
-# Make new columns for Employment status 
-# emp1 : civilian labor employed | emp0: civilian labor unemployed 
-
-emp_acs$emp0 <- c(emp_acs$B23025_007E)
-emp_acs$emp1 <- c(emp_acs$B23025_002E)
-
-# Rename columns for Nativity data. I don't need to add anything up here. 
-
+```{r hhi-new-bins}
 # Make new columns for Household Income 
-# hhi1: under 25k | hhi2: 25k - 49.9k | hhi3: 50k - 74.9k | hhi4: 75k - 99.9k | hhi5: 100k - 149.9k | hhi6: 150k - 199.9k | hhi7: over 200k
+
 
 inc_acs$hhi1 <- c(inc_acs$B19001_002E + 
                     inc_acs$B19001_003E + 
@@ -453,39 +423,64 @@ inc_acs$hhi5 <- c(inc_acs$B19001_014E +
 
 inc_acs$hhi6 <- c(inc_acs$B19001_016E)
 inc_acs$hhi7 <- c(inc_acs$B19001_017E) 
+```
+
+Code for other tables that I will be working with later.
+```{r new-bins, eval = FALSE}
+
+# Make new bins for School Enrollment by level of school 
+# se1: highschool or under | se2: undergraduate or graduate or professional school | se3: not enrolled in school 
+
+# enr_acs$se1 <- c(enr_acs$B14001_003E + 
+#                    enr_acs$B14001_004E + 
+#                    enr_acs$B14001_005E + 
+#                    enr_acs$B14001_006E + 
+#                    enr_acs$B14001_006E)
+# 
+# enr_acs$se2 <- c(enr_acs$B14001_008E + enr_acs$B14001_009E)
+# 
+# enr_acs$se3 <- c(enr_acs$B14001_010E)
+
+# Make new columns for Employment status 
+# emp1 : civilian labor employed | emp0: civilian labor unemployed 
+
+# emp_acs$emp0 <- c(emp_acs$B23025_007E)
+# emp_acs$emp1 <- c(emp_acs$B23025_002E)
+
+# Rename columns for Nativity data. I don't need to add anything up here. 
 
 # Make new columns for Nativity status
 # for0: native born | for1: foreign born 
 
-nat_acs$for0 <- c(nat_acs$B05012_002E)
-nat_acs$for1 <- c(nat_acs$B05012_003E)
+# nat_acs$for0 <- c(nat_acs$B05012_002E)
+# nat_acs$for1 <- c(nat_acs$B05012_003E)
 
 # Make new columns for Educational Attainment 
 # et1: no highschool diploma | et2: highschool diploma, equivalent, or some college  | et3: associates or bachelor's | et4: graduate or professional school 
 
-edu_acs$et1 <- c(edu_acs$B15003_002E + 
-                   edu_acs$B15003_003E + 
-                   edu_acs$B15003_004E + 
-                   edu_acs$B15003_005E + 
-                   edu_acs$B15003_006E + 
-                   edu_acs$B15003_007E + 
-                   edu_acs$B15003_008E + 
-                   edu_acs$B15003_009E + 
-                   edu_acs$B15003_010E + 
-                   edu_acs$B15003_011E + 
-                   edu_acs$B15003_012E + 
-                   edu_acs$B15003_013E + 
-                   edu_acs$B15003_014E + 
-                   edu_acs$B15003_015E + 
-                   edu_acs$B15003_016E)
-
-edu_acs$et2 <- c(edu_acs$B15003_017E + 
-                   edu_acs$B15003_018E + 
-                   edu_acs$B15003_019E + 
-                   edu_acs$B15003_020E)
-
-edu_acs$et3 <- c(edu_acs$B15003_021E + 
-                   edu_acs$B15003_022E)
+# edu_acs$et1 <- c(edu_acs$B15003_002E + 
+#                    edu_acs$B15003_003E + 
+#                    edu_acs$B15003_004E + 
+#                    edu_acs$B15003_005E + 
+#                    edu_acs$B15003_006E + 
+#                    edu_acs$B15003_007E + 
+#                    edu_acs$B15003_008E + 
+#                    edu_acs$B15003_009E + 
+#                    edu_acs$B15003_010E + 
+#                    edu_acs$B15003_011E + 
+#                    edu_acs$B15003_012E + 
+#                    edu_acs$B15003_013E + 
+#                    edu_acs$B15003_014E + 
+#                    edu_acs$B15003_015E + 
+#                    edu_acs$B15003_016E)
+# 
+# edu_acs$et2 <- c(edu_acs$B15003_017E + 
+#                    edu_acs$B15003_018E + 
+#                    edu_acs$B15003_019E + 
+#                    edu_acs$B15003_020E)
+# 
+# edu_acs$et3 <- c(edu_acs$B15003_021E + 
+#                    edu_acs$B15003_022E)
 
 # edu_acs$et4 <- c(edu_acs$B15003_023E + 
 #                    edu_acs$B15003_024E + 
@@ -495,25 +490,18 @@ edu_acs$et3 <- c(edu_acs$B15003_021E +
 
 I took one of the ACS tables and selected for the necessary geographic identifiers (STATEFP, COUNTYFP, TRACTCE, GEOID, NAME.X, ALAND, AWATER, geometry) and the source fields I had created in the last step. For all of the following tables I just selected for the source fields I had created because I will be doing a spatial join and selecting for the geographic fields would be redundant. 
 
-```{r acs-filter}
+```{r hhi-filter}
 # filter acs data by the columns that you want to keep in the new aggregate table
 
-tabletest <- inc_acs %>%
+hhi_table <- inc_acs %>%
   dplyr::select(STATEFP, COUNTYFP, TRACTCE,GEOID, NAME.x, ALAND, AWATER, geometry, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
-
-tabletest2 <- emp_acs %>%
-  dplyr::select(emp0, emp1)
-
-# st_join to join tables 
-
-tabletest3 <- st_join(tabletest, tabletest2)
 
 ```
 
 I clipped the final table by the Chicago geometry as to only include tracts that are within Chicago's city boundaries.  
-```{r tracts-clip-chi}
+```{r tracts-clip-chi, warning = FALSE}
 
-chi_tracts <- st_intersection(tabletest3, chi)%>%
+chi_tracts <- st_intersection(hhi_table, chi)%>%
   st_collection_extract("POLYGON")
 
 #class(chi_tracts)
@@ -526,9 +514,10 @@ chi_tracts_m
 ```
 
 ### Library Catchment Areas
+
 To create the catchment areas I will create Thiessen/Voronoi polygons from the library points. 
 
-```{r voronoi-polygons}
+```{r voronoi-polygons, warning = FALSE}
 
 # Generate Thiessen/Voronoi polygons from library points
 vor1 <- st_union(points)%>%
@@ -540,8 +529,8 @@ st_sf %>%
 st_cast
 #Plot polygons to make sure they loaded
 
-plot(vorpoly)
-class(vorpoly)
+#plot(vorpoly)
+#class(vorpoly)
 
 # Rejoin attributes from library points data to voronoi polygons 
 # Because I had to union the points prior to st_voronoi() function the library attributes were lost 
@@ -553,7 +542,7 @@ vor_chi <- st_intersection(vorpoly2, chi)
     
 # Plot polygons to make sure they clipped
 
-plot(vor_chi)
+#plot(vor_chi)
 
 voronoi_m <- leaflet() %>% 
                addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
@@ -566,7 +555,7 @@ voronoi_m
 
 ### Filter Population Blocks
 
-```{r filter-blocks}
+```{r filter-blocks, warning = FALSE}
 
 # Filter out blocks with no population data 
 blocks_pop <- blocks %>%
@@ -582,7 +571,7 @@ chi_pop <- st_as_sf(st_intersection(blocks_pop, chi)%>%
 #plot(chi_pop$POP20)
 ```
 
-```{r map-chi-blocks}
+```{r map-chi-blocks, warning = FALSE}
 
 pal <- colorNumeric(
   palette = c("#F5FDF1", "#0D5B1E"),
@@ -595,12 +584,18 @@ qpal <- colorQuantile(c("#F5FDF1", "#0D5B1E"), chi_pop$POP20, n = 10)
 
 chi_pop_m <- leaflet() %>% 
               addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-              addPolygons(data = chi_pop, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal(POP20))%>%
-              addPolygons(data = vor_chi, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)
+              addPolygons(data = chi_pop, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal(POP20))#%>%
+              #addPolygons(data = vor_chi, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)
 
 chi_pop_m
 ```
 ### Join Population Data and Population Weighted Re-Aggregation 
+
+The code up to this point, I am confident in is correct. 
+
+This is the point in the workflow where I start having issues. My intentions were to generate a layer of centroids for the block data so I could join the population data to the tracts. I would do this two times. Once for the original tracts layer and a second time after I intersect the tracts with the voronoi diagram. 
+When I join the centroids to the tracts layer, R makes a row for every centroids that goes into a tract. Theoretically if I group by the tract ID: TRACTCE and summarize the population column I should get a sum population value for every tract. However, when I grouped by and summarized, I got around 200 less observations. The map reveals that many tracts aren't receving the population data for some reason.
+
 ```{r centroids}
 
 # Generate centroids for the blocks
@@ -612,50 +607,56 @@ centroids <- st_centroid(chi_pop)
 
 # Plot the centroids on the map
 
-centroids_m <- leaflet() %>% 
-                addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-                addPolygons(data = chi_tracts, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
-                addCircles(data = centroids, weight = 3, opacity= 1, color = "orange")
+#centroids_m <- leaflet() %>% 
+                #addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+                #addPolygons(data = chi_tracts, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
+                #addCircles(data = centroids, weight = 3, opacity= 1, color = "orange")
 
-centroids_m
+#centroids_m
 ```
 
 ```{r pop-agg-prep-1}
 
 # Join block centroids to tracts 
 
-tracts_pop <- st_join(chi_tracts, centroids)
+tracts_centroids <- st_join(chi_tracts, centroids)
 
+# select for the columns that I want to see 
+tracts_pop <- tracts_centroids %>%
+  dplyr::select(TRACTCE,GEOID.x, NAME.x, ALAND, AWATER, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7, POP20)
 #Summarize population by tract 
 
 group_tract <- tracts_pop %>%
-                group_by(TRACTCE) %>%
-                summarise(sum_pop = sum(POP20))
+                 group_by(TRACTCE) %>%
+                 summarise(sum_pop = sum(POP20))
+
+tracts_pop <- st_join(tracts_pop, group_tract)
+# Join sum_pop back to the chi_tracts table 
+#chi_tracts2 <- st_join(group_tract, chi_tracts)
 
 # Map!
 
-qpal2 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), group_tract$sum_pop, n = 10)
+#qpal2 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), group_tract$sum_pop, n = 10)
 
-group_tract_m <- leaflet() %>% 
-              addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-              addPolygons(data = group_tract, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal2(sum_pop))
-              
+#group_tract_m <- leaflet() %>%
+              #addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
+              #addPolygons(data = tracts_pop, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal2(sum_pop))
 
-group_tract_m
 
+#group_tract_m
 
 ```
 
-```{r pop-agg-prep-2}
+```{r pop-agg-prep-2, warning = FALSE}
 
 # Intersect tracts with Voronoi polygons 
 
-vorclip_tracts <- st_intersection(tracts_pop, vor_chi)%>%
-  st_collection_extract("POLYGON")
+# vorclip_tracts <- st_intersection(tracts_pop, vor_chi)%>%
+#   st_collection_extract("POLYGON")
 
-# Join block centroids to new intersection polygons 
+# Join block centroids to new intersection polygon to get population data into the tracts again
 
-intersect_pop <- st_join(vorclip_tracts, centroids)
+# intersect_pop <- st_join(vorclip_tracts, centroids)
 
 # Summarize population by intersected tracts 
 
@@ -681,48 +682,35 @@ intersect_pop <- st_join(vorclip_tracts, centroids)
  
 # Calculate population weight ratio (PWR) | fragment population / source population = population weight ratio
 
-output <- mutate(input_data,propPop = secPOP20 / POP20)
+# output <- mutate(input_data,propPop = secPOP20 / POP20)
 
 # Multiply source fields by the PWR to estimate the population weighted value  
 
-output <- mutate(final_table,
-          hhi1_w = hhi1 * pwr,
-          hhi2_w = hhi2 * pwr,
-          hhi3_w = hhi3 * pwr,
-          hhi4_w = hhi4 * pwr,
-          hhi5_w = hhi5 * pwr,
-          hhi6_w = hhi6 * pwr,
-          hhi7_w = hhi7 * pwr,
-          emp0_w = emp0 * pwr, 
-          emp1_w = emp1 * pwr, 
-          for0_w = for0 * pwr, 
-          for1_w = for1 * pwr,
-          se1_w = se1 * pwr, 
-          se2_w = se2 * pwr, 
-          se3_w = se3 * pwr)
-
+# output <- mutate(final_table,
+          # hhi1_w = hhi1 * pwr,
+          # hhi2_w = hhi2 * pwr,
+          # hhi3_w = hhi3 * pwr,
+          # hhi4_w = hhi4 * pwr,
+          # hhi5_w = hhi5 * pwr,
+          # hhi6_w = hhi6 * pwr,
+          # hhi7_w = hhi7 * pwr)
 
 ```
 
-## Analysis
-
-Describe the methods of analysis that will directly test the hypotheses or provide results to answer the research questions.
-This section should explicitly define any spatial / statistical *models* and their *parameters*, including *grouping* criteria, *weighting* criteria, and *significance thresholds*.
-Also explain any follow-up analyses or validations.
 
 # Results
 
-
+Work in Progress. 
 
 # Discussion
 
-Describe how the results are to be interpreted *vis a vis* each hypothesis or research question.
+Work in Progress.
 
 # Integrity Statement
 
 The authors of this preregistration state that they completed this preregistration to the best of their knowledge and that no other preregistration exists pertaining to the same hypotheses and research.
 
-
 This report is based upon the template for Reproducible and Replicable Research in Human-Environment and Geographical Sciences, DOI:[10.17605/OSF.IO/W29MQ](https://doi.org/10.17605/OSF.IO/W29MQ)
 
 # References
+Flitter, H., Weckenbrock, P., & Weibel, R. (n.d.). Thiessen Polygon. Retrieved December 16, 2023, from http://www.gitta.info/Accessibilit/en/html/UncProxAnaly_learningObject4.html
