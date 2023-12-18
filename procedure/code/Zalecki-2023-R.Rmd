@@ -97,8 +97,8 @@ knitr::opts_chunk$set(
   fig.path = paste0(here("results", "figures"), "/")
 )
 
-#set up Github repository as the R project
-#use_github("azalecki/Zalecki-2023")
+#Switch the graphics output from raster to vector
+knitr::opts_chunk$set(dev="png")
 
 ```
 
@@ -276,7 +276,7 @@ inc_acs <- get_acs(
 
 Data for Chicago Public Library locations comes in CSV format with coordinate data. Prior to uploading the CSV file into the Github site I used Microsoft Excel to manually separate the Longitude and Latitude values into two separate columns. No other data manipulation was done in Excel. 
 
-```{r cpl-data, warning = FALSE}
+```{r cpl-data, warning = FALSE, dpi=30, out.width="500px", out.height="500px"}
 
 #Load Chicago Public Library addresses from CSV file found in Folder: data/raw/public/CPL-Locations.csv
 
@@ -519,7 +519,7 @@ plot(chi_tracts$geometry)
 
 To create the catchment areas I will create Thiessen/Voronoi polygons. This was done by using the st_voronoi() function on the library points data. Finally, I clipped the voronoi diagram by the Chicago shapefile. 
 
-```{r voronoi-polygons, warning = FALSE}
+```{r voronoi-polygons, warning = FALSE, dpi=30, out.width="500px", out.height="500px"}
 
 # Generate Thiessen/Voronoi polygons from library points
 vor1 <- st_union(points)%>%
@@ -616,9 +616,9 @@ plot(centroids$geometry)
 # centroids_m
 ```
 
-Theoretically if I group by the tract ID: TRACTCE and summarize the population column I should get a sum population value for every tract. However, when I grouped by and summarized, I got around 200 less observations than my original layer of tracts in Chicago. The map reveals that many tracts aren't receving the population data for some reason.
+Theoretically if I group by the tract ID: TRACTCE and summarize the population column I should get a sum population value for every tract. However, when I grouped by and summarized, I got around 200 less observations than my original layer of tracts in Chicago. The map reveals that many tracts aren't receiving the population data for some reason.
 
-```{r pop-agg-prep-1}
+```{r pop-agg-prep-1, dpi=30, out.width="500px", out.height="500px"}
 
 # Join block centroids to tracts 
 
