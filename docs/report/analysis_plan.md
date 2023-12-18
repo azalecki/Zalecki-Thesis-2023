@@ -22,9 +22,6 @@ Rising inequality and increased privatization of space in urban landscapes are b
 
 ## Study design
 
-This is an **original study**. 
-
-
 This workflow is the first part of my senior research project that explores the question of how library service catchment areas differ along demographic lines in Chicago, IL. This workflow was originally part of my independent research work with Professor Peter Nelson during the Fall semester of 2023 which I created and implemented in QGIS.To improve the methods for this research and make it reproducible/replicable I decided to reproduce the QGIS workflow in R Studio. 
 
 This part of the study will accomplish the following:
@@ -56,16 +53,13 @@ Population data at the census block level is derived from the US Decennial Censu
 - `Distribution`: Distributed by the [US Census Bureau](https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html)
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
-- `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
-  - `Label`: variable name as used in the data or code
-  - `Alias`: intuitive natural language name
-  - `Definition`: Short description or definition of the variable. Include measurement units in description.
-  - `Type`: data type, e.g. character string, integer, real
-  - `Accuracy`: e.g. uncertainty of measurements
-  - `Domain`: Range (Maximum and Minimum) of numerical data, or codes or categories of nominal data, or reference to a standard codebook
-  - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
-  - `Missing Data Frequency`: Frequency of missing data observations
-  - 
+
+- [ ] data is not available yet
+- [ ] data is available, but only metadata has been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
+- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
+
 #### American Community Survey(ACS) Demographic Data 
 
 **Standard Metadata**
@@ -80,26 +74,11 @@ Population data at the census block level is derived from the US Decennial Censu
 - `Distribution`: Distributed by the US Census Bureau
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
-- `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
-  - `Label`: variable name as used in the data or code
-  - `Alias`: intuitive natural language name
-  - `Definition`: Short description or definition of the variable. Include measurement units in description.
-  - `Type`: data type, e.g. character string, integer, real
-  - `Accuracy`: e.g. uncertainty of measurements
-  - `Domain`: Range (Maximum and Minimum) of numerical data, or codes or categories of nominal data, or reference to a standard codebook
-  - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
-  - `Missing Data Frequency`: Frequency of missing data observations
-
-| Label | Alias | Definition | Type | Accuracy | Domain | Missing Data Value(s) | Missing Data Frequency |
-| :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-| variable1 | ... | ... | ... | ... | ... | ... | ... |
-| variable2 | ... | ... | ... | ... | ... | ... | ... |
-
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
-- [ ] metadata and descriptive statistics have been observed
-- [X] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 
@@ -129,8 +108,8 @@ Population data at the census block level is derived from the US Decennial Censu
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
-- [ ] metadata and descriptive statistics have been observed
-- [X] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 #### Public Library Locations
@@ -148,95 +127,31 @@ Population data at the census block level is derived from the US Decennial Censu
 http://chipublib.org). Retrieved from the [City of Chicago Data Portal](https://data.cityofchicago.org/Education/Libraries-Locations-Contact-Information-and-Usual-/x8fc-8rcq/data)c
 - `Constraints`: Legal constraints for *access* or *use* to protect *privacy* or *intellectual property rights*
 - `Data Quality`: Quality unknown
-- `Variables`: For each variable, enter the following information. If you have two or more variables per data source, you may want to present this information in table form (shown below)
-  - `Label`: variable name as used in the data or code
-  - `Alias`: intuitive natural language name
-  - `Definition`: Short description or definition of the variable. Include measurement units in description.
-  - `Type`: data type, e.g. character string, integer, real
-  - `Accuracy`: e.g. uncertainty of measurements
-  - `Domain`: Range (Maximum and Minimum) of numerical data, or codes or categories of nominal data, or reference to a standard codebook
-  - `Missing Data Value(s)`: Values used to represent missing data and frequency of missing data observations
-  - `Missing Data Frequency`: Frequency of missing data observations
-
-| Label | Alias | Definition | Type | Accuracy | Domain | Missing Data Value(s) | Missing Data Frequency |
-| :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-| variable1 | ... | ... | ... | ... | ... | ... | ... |
-| variable2 | ... | ... | ... | ... | ... | ... | ... |
-| variable1 | ... | ... | ... | ... | ... | ... | ... |
-| variable2 | ... | ... | ... | ... | ... | ... | ... |
-| variable1 | ... | ... | ... | ... | ... | ... | ... |
-| variable2 | ... | ... | ... | ... | ... | ... | ... |
 
 - [ ] data is not available yet
 - [ ] data is available, but only metadata has been observed
-- [ ] metadata and descriptive statistics have been observed
-- [X] metadata and a pilot test subset or sample of the full dataset have been observed
+- [X] metadata and descriptive statistics have been observed
+- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
 - [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
 
 ### Bias and threats to validity
 
-Given the research design and primary data to be collected and/or secondary data to be used, discuss common threats to validity and the approach to mitigating those threats, with an emphasis on geographic threats to validity.
+**Edge/shape effects when creating polygons to represent library service/catchment areas**
 
-These include:
-  - uneven primary data collection due to geographic inaccessibility or other constraints
-  - multiple hypothesis testing
-  - edge or boundary effects
-  - the modifiable areal unit problem
-  - nonstationarity
-  - spatial dependence or autocorrelation
-  - temporal dependence or autocorrelation
-  - spatial scale dependency
-  - spatial anisotropies
-  - confusion of spatial and a-spatial causation
-  - ecological fallacy
-  - uncertainty e.g. from spatial disaggregation, anonymization, differential privacy
-
-### Bias and threats to validity
-
-Given the research design and primary data to be collected and/or secondary data to be used, discuss common threats to validity and the approach to mitigating those threats, with an emphasis on geographic threats to validity.
-
-These include:
-  - uneven primary data collection due to geographic inaccessibility or other constraints
-  - multiple hypothesis testing
-  - edge or boundary effects
-  - the modifiable areal unit problem
-  - nonstationarity
-  - spatial dependence or autocorrelation
-  - temporal dependence or autocorrelation
-  - spatial scale dependency
-  - spatial anisotropies
-  - confusion of spatial and a-spatial causation
-  - ecological fallacy
-  - uncertainty e.g. from spatial disaggregation, anonymization, differential privacy
+Visualizing catchment areas for libraries is my first objective because, unlike primary schools that have definite attendance boundaries, libraries do not have proper "service areas." In the past, Thiessen/Voronoi polygons have been used to map catchment or service areas by proximity to points. As explained by Flitter et al(nd), GIS tools that generate Thiessen polygons draw shapes around a layer of point data where every location within one shape is nearer to its center point than all other points in the layer. These proximal regions assume that people are more likely to visit the library closest to them and as a result library services should reflect their local constituents. I recognize that this method has its flaws because this is not always the case. Some people may frequent libraries outside of their residential neighborhood for a variety of reasons and there is no way of accurately tracking that. The other option would be to draw buffers around library points like in the method we saw in the Kang et al. (year) study or calculate a network analysis. Thiessen polygons are, however, the simpler and computationally less intense option to a full-on network analysis. Although they might seem arbitrary I have attempted to improve the validity by including a population-weighted aggregation to more accurately estimate the neighborhood characteristics of the library service areas.
 
 ### Data transformations
 
-Describe all data transformations planned to prepare data sources for analysis.
-This section should explain with the fullest detail possible how to transform data from the **raw** state at the time of acquisition or observation, to the pre-processed **derived** state ready for the main analysis.
-Including steps to check and mitigate sources of **bias** and **threats to validity**.
-The method may anticipate **contingencies**, e.g. tests for normality and alternative decisions to make based on the results of the test.
-More specifically, all the **geographic** and **variable** transformations required to prepare input data as described in the data and variables section above to match the study's spatio-temporal characteristics as described in the study metadata and study design sections.
-Visual workflow diagrams may help communicate the methodology in this section.
-
-Examples of **geographic** transformations include coordinate system transformations, aggregation, disaggregation, spatial interpolation, distance calculations, zonal statistics, etc.
-
-Examples of **variable** transformations include standardization, normalization, constructed variables, imputation, classification, etc.
-
-Be sure to include any steps planned to **exclude** observations with *missing* or *outlier* data, to **group** observations by *attribute* or *geographic* criteria, or to **impute** missing data or apply spatial or temporal **interpolation**.
+The workflow with data transformations will be reported with the final report.
 
 ### Analysis
 
-Describe the methods of analysis that will directly test the hypotheses or provide results to answer the research questions.
-This section should explicitly define any spatial / statistical *models* and their *parameters*, including *grouping* criteria, *weighting* criteria, and *significance thresholds*.
-Also explain any follow-up analyses or validations.
+For the analysis of this study I will be generating simple summaries about the social, economic and demographic data joined to the library service areas.
+
 
 ## Results
 
 Descriptive statistics and a map of the library catchment areas will be how the results will be presented. 
-
-## Discussion
-
-Describe how the results are to be interpreted *vis a vis* each hypothesis or research question.
 
 ## Integrity Statement
 
@@ -246,4 +161,6 @@ The author of this preregistration state that they completed this preregistratio
 
 This report is based upon the template for Reproducible and Replicable Research in Human-Environment and Geographical Sciences, DOI:[10.17605/OSF.IO/W29MQ](https://doi.org/10.17605/OSF.IO/W29MQ)
 
-## References
+References 
+Flitter, H., Weckenbrock, P., & Weibel, R. (n.d.). Thiessen Polygon. Retrieved December 16, 2023, from http://www.gitta.info/Accessibilit/en/html/UncProxAnaly_learningObject4.html
+
