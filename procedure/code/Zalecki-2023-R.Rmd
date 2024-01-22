@@ -196,7 +196,21 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
     keep_geo_vars = TRUE)%>%
     st_drop_geometry()
   
- # Educational Attainment Table 
+  # Household Type 
+  
+  hhold_acs <- get_acs(
+    geography = "tract",
+    table = "B11003",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
+  
+  # Educational Attainment Table 
 
   edu_acs <- get_acs(
     geography = "tract",
@@ -209,8 +223,22 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
     geometry = TRUE,
     keep_geo_vars = TRUE)%>%
     st_drop_geometry()
+  
+  # Disability Status Table 
+  
+  dis_acs <- get_acs(
+    geography = "tract",
+    table = "B18101",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
 
- # School Enrollment 
+  # School Enrollment 
  
   enr_acs <- get_acs(
     geography = "tract",
@@ -417,37 +445,36 @@ Visualizing catchment areas for libraries is my first objective because, unlike 
 
 The ACS classifies the data it collects in its own way but I wanted to reclassify it into different categories.
 
-| Variable Name in Study | Study Label   |            Variable Used from ACS Data             |      ACS Label        | 
-|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
-|        hhi1            |  under 25k    |  B19001_002E                                       |   Less than $10,000   |
-|                        |               |  B19001_003E                                       |   $10,000 to $14,999  |
-|                        |               |  B19001_004E                                       |   $15,000 to $19,999  |
-|                        |               |  B19001_005E                                       |   $20,000 to $24,999  |
-|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
-|       hhi2             | 25k - 49.9k   |  B19001_006E                                       |  $25,000 to $29,999   |
-|                        |               |  B19001_007E                                       |  $30,000 to $34,999   |
-|                        |               |  B19001_008E                                       |  $35,000 to $39,999   |
-|                        |               |  B19001_009E                                       |  $40,000 to $44,999   |
-|                        |               |  B19001_010E                                       |  $45,000 to $49,999   |
-|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
-|         hhi3           |  50k - 74.9k  |  B19001_011E                                       |  $50,000 to $59,999   |
-|                        |               |  B19001_012E                                       |  $60,000 to $74,999   |
-|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
-|        hhi4            |  75k - 99.9k  |  B19001_013E                                       |  $75,000 to $99,999   | 
-|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
-|       hhi5             | 100k - 149.9k |  B19001_014E                                       | $100,000 to $124,999  |
-|                        |               |  B19001_015E                                       | $125,000 to $149,999  |
-|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:| 
-|        hhi6            | 150k - 199.9k |  B19001_016E                                       | $150,000 to $199,999  |
-|:----------------------:|:-------------:|:--------------------------------------------------:|:---------------------:|
-|        hhi7            |  over 200k    |  B19001_017E                                       |  $200,000 or more     | 
-
 After creating the new classifications, I selected for the columns that I wanted to keep and work with. This included all of the necessary geographic identifiers(STATEFP, COUNTYFP, TRACTCE, GEOID, NAME.X, ALAND, AWATER, geometry) and the source fields I had created in the previous step. Finally, I clipped the table by the Chicago shapefile so to only include tracts that are within Chicago's city boundaries. 
 
 
 ```{r new-bins, eval = FALSE}
 
-# Rename Race columns to make the names for intuitive 
+# Make new columns for Age categories 
+
+# as_acs$child <-
+# as_acs$teen <-
+# as_acs$yad <-
+# as_acs$mad <-
+# as_acs$sen <-
+# 
+# as_acs$t_male <- c(as_acs$)
+# as_acs$t_fem <- c(as_acs$)
+# 
+# as_acs$m_child <-
+# as_acs$m_teen <-
+# as_acs$m_yad <-
+# as_acs$m_mad <-
+# as_acs$m_sen <-
+# 
+# as_acs$f_child <-
+# as_acs$f_teen <-
+# as_acs$f_yad <-
+# as_acs$f_mad <-
+# as_acs$f_sen <-
+
+
+# Rename Race columns to make the names more intuitive 
 
 race_acs$white <- c(race_acs$B02001_002E)
 race_acs$black <- c(race_acs$B02001_003E)
@@ -654,21 +681,21 @@ chi_pop <- st_as_sf(st_intersection(blocks_pop, chi)%>%
 
 ```{r map-chi-blocks, warning = FALSE, eval = FALSE}
 
-# pal <- colorNumeric(
-#   palette = c("#F5FDF1", "#0D5B1E"),
-#   domain = chi_pop$POP20)
-# 
-# 
-# #binpal <- colorBin(c("#F5FDF1", "#0D5B1E"), chi_pop$POP20, 500, pretty = FALSE)
-# 
-# qpal <- colorQuantile(c("#F5FDF1", "#0D5B1E"), chi_pop$POP20, n = 10)
-# 
-# chi_pop_m <- leaflet() %>% 
-#               addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-#               addPolygons(data = chi_pop, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal(POP20))#%>%
-#               #addPolygons(data = vor_chi, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)
-# 
-# chi_pop_m
+pal <- colorNumeric(
+  palette = c("#F5FDF1", "#0D5B1E"),
+  domain = chi_pop$POP20)
+
+
+#binpal <- colorBin(c("#F5FDF1", "#0D5B1E"), chi_pop$POP20, 500, pretty = FALSE)
+
+qpal <- colorQuantile(c("#F5FDF1", "#0D5B1E"), chi_pop$POP20, n = 10)
+
+chi_pop_m <- leaflet() %>%
+              addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
+              addPolygons(data = chi_pop, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal(POP20))#%>%
+              #addPolygons(data = vor_chi, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)
+
+chi_pop_m
 ```
 
 ### Join Population Data and Population Weighted Re-Aggregation 
@@ -688,12 +715,6 @@ centroids <- cent_gen %>%
 
 # Plot the centroids on the map
 
-<<<<<<< HEAD
-#plot(centroids$geometry)
-=======
-# plot(centroids$geometry)
-# 
->>>>>>> 6900daed3673a8c3c3b5205355e3c6155ea464c5
 # centroids_m <- leaflet() %>%
 #                 addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
 #                 addPolygons(data = chi_tracts, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
@@ -704,12 +725,8 @@ centroids <- cent_gen %>%
 
 Theoretically if I group by the tract ID: TRACTCE and summarize the population column I should get a sum population value for every tract. However, when I grouped by and summarized, I got around 200 less observations than my original layer of tracts in Chicago. The map reveals that many tracts aren't receiving the population data for some reason.
 
-<<<<<<< HEAD
-```{r pop-agg-prep-1, warning = FALSE}
-=======
-```{r pop-agg-prep-1, dpi=30, out.width="500px", out.height="500px"}
->>>>>>> 6900daed3673a8c3c3b5205355e3c6155ea464c5
 
+```{r pop-agg-prep-1, warning = FALSE}
 # Join block centroids to tracts 
 
 tr_cent <- st_join(chi_tracts, centroids)%>%
