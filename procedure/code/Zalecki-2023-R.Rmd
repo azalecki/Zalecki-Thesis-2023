@@ -44,7 +44,7 @@ This research aims to answer the following two questions. How do library service
 packages <- c( 
   "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris",
   "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", 
-  "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat"
+  "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat", "webshot"
 )
 
 # force all conflicts to become errors
@@ -676,7 +676,7 @@ chi_pop <- st_as_sf(st_intersection(blocks_pop, chi)%>%
 
 My intentions for this part of the workflow were to generate a layer of centroids for the block data so I could join the population data to the tracts. I would do this two times. Once for the original tracts layer and a second time after I intersect the tracts with the voronoi diagram. I successfully generate a list of centroids for every block but when I join the centroids to the tracts layer, R makes a row for every centroid that was joined to a tract. This more than double the amount of observation in the data table. 
 
-```{r centroids}
+```{r centroids, warning = FALSE}
 
 # Generate centroids for the blocks
 
@@ -688,8 +688,12 @@ centroids <- cent_gen %>%
 
 # Plot the centroids on the map
 
+<<<<<<< HEAD
+#plot(centroids$geometry)
+=======
 # plot(centroids$geometry)
 # 
+>>>>>>> 6900daed3673a8c3c3b5205355e3c6155ea464c5
 # centroids_m <- leaflet() %>%
 #                 addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
 #                 addPolygons(data = chi_tracts, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
@@ -700,7 +704,11 @@ centroids <- cent_gen %>%
 
 Theoretically if I group by the tract ID: TRACTCE and summarize the population column I should get a sum population value for every tract. However, when I grouped by and summarized, I got around 200 less observations than my original layer of tracts in Chicago. The map reveals that many tracts aren't receiving the population data for some reason.
 
+<<<<<<< HEAD
+```{r pop-agg-prep-1, warning = FALSE}
+=======
 ```{r pop-agg-prep-1, dpi=30, out.width="500px", out.height="500px"}
+>>>>>>> 6900daed3673a8c3c3b5205355e3c6155ea464c5
 
 # Join block centroids to tracts 
 
