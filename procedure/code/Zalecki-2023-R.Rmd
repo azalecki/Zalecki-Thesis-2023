@@ -212,17 +212,17 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
  # School Enrollment 
  
-  # enr_acs <- get_acs(
-  #   geography = "tract",
-  #   table = "B14001",
-  #   county = "Cook",
-  #   state = "IL",
-  #   year = 2021,
-  #   output = "wide",
-  #   cache_table = TRUE,
-  #   geometry = TRUE,
-  #   keep_geo_vars = TRUE)%>%
-  #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  enr_acs <- get_acs(
+    geography = "tract",
+    table = "B14001",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
  
 # Employment Table 
 
@@ -254,31 +254,31 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
  
 # Language Spoken at Home
 
-   # lang_acs <- get_acs(
-   #   geography = "tract",
-   #   table = "B16002",
-   #   county = "Cook",
-   #   state = "IL",
-   #   year = 2016,
-   #   output = "wide",
-   #   cache_table = TRUE,
-   #   geometry = TRUE,
-   #   keep_geo_vars = TRUE)%>%
-   #   st_drop_geometry()
+   lang_acs <- get_acs(
+     geography = "tract",
+     table = "B06007",
+     county = "Cook",
+     state = "IL",
+     year = 2016,
+     output = "wide",
+     cache_table = TRUE,
+     geometry = TRUE,
+     keep_geo_vars = TRUE)%>%
+     st_drop_geometry()
  
 # Computers at Home
  
-  # comp_acs <- get_acs(
-  #   geography = "tract",
-  #   table = "B28010",
-  #   county = "Cook",
-  #   state = "IL",
-  #   year = 2021,
-  #   output = "wide",
-  #   cache_table = TRUE,
-  #   geometry = TRUE,
-  #   keep_geo_vars = TRUE)%>%
-  #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  comp_acs <- get_acs(
+    geography = "tract",
+    table = "B28010",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+     st_drop_geometry()
  
  # Household Income Table 
 inc_acs <- get_acs(
