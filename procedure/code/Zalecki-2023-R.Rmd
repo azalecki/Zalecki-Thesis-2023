@@ -136,7 +136,7 @@ cook_tracts <- tracts(
                 year = 2020)%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-plot(cook_tracts)
+# plot(cook_tracts)
 
 ```
 ### American Community Survey(ACS) Demographic Data 
@@ -147,7 +147,7 @@ I will add a more comprehensive list of variables as my senior research project 
 
 ```{r acs-data, install = TRUE, warning = FALSE, results = "hide"}
 
-#Load in Census API Key. To get your own key visit this website: 
+# Load in Census API Key. To get your own key visit this website: 
 
 census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
@@ -718,9 +718,10 @@ group_tract <- aggregate(tr_cent$POP20, by = list(tr_cent$TRACTCE), FUN= sum)
 group_tract$TRACTCE <- c(group_tract$Group.1)
 group_tract$SUMPOP <- c(group_tract$x)
 
-group_tract %>% dplyr::select(TRACTCE,SUMPOP)
+group_tract2 <- group_tract %>% 
+                dplyr::select(TRACTCE,SUMPOP)
 
-fn_trct <- dplyr::inner_join(chi_tracts, group_tract)
+fn_trct <- dplyr::left_join(chi_tracts, group_tract2)
 
 ```
 
@@ -744,7 +745,7 @@ group_tract_m
 
 # Intersect tracts with Voronoi polygons 
 
-vorclip_tracts <- st_intersection(tracts_pop, vor_chi)%>%
+vorclip_tracts <- st_intersection(fn_trct, vor_chi)%>%
 st_collection_extract("POLYGON")
 
 # Join block centroids to new intersection polygon to get population data into the tracts again
