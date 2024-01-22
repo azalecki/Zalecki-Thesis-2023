@@ -97,8 +97,8 @@ knitr::opts_chunk$set(
   fig.path = paste0(here("results", "figures"), "/")
 )
 
-#set up Github repository as the R project
-#use_github("azalecki/Zalecki-2023")
+#Switch the graphics output from raster to vector
+knitr::opts_chunk$set(dev="png")
 
 ```
 
@@ -126,6 +126,19 @@ plot(chi$geometry)
 
 ```
 
+```{r tracts-shapefile}
+#Load in tracts for Chicago 
+cook_tracts <- tracts(
+                state = "IL",
+                county = "Cook",
+                cb = FALSE,
+                resolution = "500k",
+                year = 2020)%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+# plot(cook_tracts)
+
+```
 ### American Community Survey(ACS) Demographic Data 
 
 In order to simplify the workflow for this independent project I will be working with one variable, household, income that is derived from ACS data table B19001. Household income data is referenced at the Census tract level for the whole of Cook County. The year derived is 2021. 
@@ -134,7 +147,7 @@ I will add a more comprehensive list of variables as my senior research project 
 
 ```{r acs-data, install = TRUE, warning = FALSE, results = "hide"}
 
-#Load in Census API Key. To get your own key visit this website: 
+# Load in Census API Key. To get your own key visit this website: 
 
 census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
@@ -142,106 +155,132 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
  # Age and Sex Table 
 
- # as_acs <- get_acs(
- #   geography = "tract",
- #   table = "S0101",
- #   county = "Cook",
- #   state = "IL",
- #   year = 2021,
- #   output = "wide",
- #   cache_table = TRUE,
- #   geometry = TRUE,
- #   keep_geo_vars = TRUE)%>%
- #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  as_acs <- get_acs(
+    geography = "tract",
+    table = "S0101",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
 
 
- # Race
+ # Race Table
  
+  race_acs <- get_acs(
+    geography = "tract",
+    table = "B02001",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
+  
+  # Ethnicity Table
+  
+  ethn_acs <- get_acs(
+    geography = "tract",
+    table = "B03002",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
+  
  # Educational Attainment Table 
 
- # edu_acs <- get_acs(
- #   geography = "tract",
- #   table = "B15003",
- #   county = "Cook",
- #   state = "IL",
- #   year = 2021,
- #   output = "wide",
- #   cache_table = TRUE,
- #   geometry = TRUE,
- #   keep_geo_vars = TRUE)%>%
- #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  edu_acs <- get_acs(
+    geography = "tract",
+    table = "B15003",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
 
  # School Enrollment 
  
- # enr_acs <- get_acs(
- #   geography = "tract",
- #   table = "B14001",
- #   county = "Cook",
- #   state = "IL",
- #   year = 2021,
- #   output = "wide",
- #   cache_table = TRUE,
- #   geometry = TRUE,
- #   keep_geo_vars = TRUE)%>%
- #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  # enr_acs <- get_acs(
+  #   geography = "tract",
+  #   table = "B14001",
+  #   county = "Cook",
+  #   state = "IL",
+  #   year = 2021,
+  #   output = "wide",
+  #   cache_table = TRUE,
+  #   geometry = TRUE,
+  #   keep_geo_vars = TRUE)%>%
+  #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
  
-# Employment table 
+# Employment Table 
 
- # emp_acs <- get_acs(
- #   geography = "tract",
- #   table = "B23025",
- #   county = "Cook",
- #   state = "IL",
- #   year = 2021,
- #   output = "wide",
- #   cache_table = TRUE,
- #   geometry = TRUE,
- #   keep_geo_vars = TRUE)%>%
- #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  emp_acs <- get_acs(
+    geography = "tract",
+    table = "B23025",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
  
-# Nativity table 
+# Nativity Table 
  
- # nat_acs <- get_acs(
- #   geography = "tract",
- #   table = "B05012",
- #   county = "Cook",
- #   state = "IL",
- #   year = 2021,
- #   output = "wide",
- #   cache_table = TRUE,
- #   geometry = TRUE,
- #   keep_geo_vars = TRUE)%>%
- #  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  nat_acs <- get_acs(
+    geography = "tract",
+    table = "B05012",
+    county = "Cook",
+    state = "IL",
+    year = 2021,
+    output = "wide",
+    cache_table = TRUE,
+    geometry = TRUE,
+    keep_geo_vars = TRUE)%>%
+    st_drop_geometry()
  
 # Language Spoken at Home
- 
- # lang_acs <- get_acs(
- #   geography = "tract",
- #   table = "B16002",
- #   county = "Cook",
- #   state = "IL",
- #   year = 2021,
- #   output = "wide",
- #   cache_table = TRUE,
- #   geometry = TRUE,
- #   keep_geo_vars = TRUE)%>%
- #  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+   # lang_acs <- get_acs(
+   #   geography = "tract",
+   #   table = "B16002",
+   #   county = "Cook",
+   #   state = "IL",
+   #   year = 2016,
+   #   output = "wide",
+   #   cache_table = TRUE,
+   #   geometry = TRUE,
+   #   keep_geo_vars = TRUE)%>%
+   #   st_drop_geometry()
  
 # Computers at Home
  
- # comp_acs <- get_acs(
- #   geography = "tract",
- #   table = "B28010",
- #   county = "Cook",
- #   state = "IL",
- #   year = 2021,
- #   output = "wide",
- #   cache_table = TRUE,
- #   geometry = TRUE,
- #   keep_geo_vars = TRUE)%>%
- #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+  # comp_acs <- get_acs(
+  #   geography = "tract",
+  #   table = "B28010",
+  #   county = "Cook",
+  #   state = "IL",
+  #   year = 2021,
+  #   output = "wide",
+  #   cache_table = TRUE,
+  #   geometry = TRUE,
+  #   keep_geo_vars = TRUE)%>%
+  #   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
  
- # Household Income  
+ # Household Income Table 
 inc_acs <- get_acs(
    geography = "tract",
    table = "B19001",
@@ -252,7 +291,7 @@ inc_acs <- get_acs(
    cache_table = TRUE,
    geometry = TRUE,
    keep_geo_vars = TRUE)%>%
-  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+    st_drop_geometry()
 
 # Check attributes of table
 
@@ -276,7 +315,7 @@ inc_acs <- get_acs(
 
 Data for Chicago Public Library locations comes in CSV format with coordinate data. Prior to uploading the CSV file into the Github site I used Microsoft Excel to manually separate the Longitude and Latitude values into two separate columns. No other data manipulation was done in Excel. 
 
-```{r cpl-data, warning = FALSE}
+```{r cpl-data, warning = FALSE, dpi=30, out.width="500px", out.height="500px"}
 
 #Load Chicago Public Library addresses from CSV file found in Folder: data/raw/public/CPL-Locations.csv
 
@@ -405,9 +444,22 @@ The ACS classifies the data it collects in its own way but I wanted to reclassif
 
 After creating the new classifications, I selected for the columns that I wanted to keep and work with. This included all of the necessary geographic identifiers(STATEFP, COUNTYFP, TRACTCE, GEOID, NAME.X, ALAND, AWATER, geometry) and the source fields I had created in the previous step. Finally, I clipped the table by the Chicago shapefile so to only include tracts that are within Chicago's city boundaries. 
 
-```{r hhi-new-bins}
-# Make new columns for Household Income 
 
+```{r new-bins, eval = FALSE}
+
+# Rename Race columns to make the names for intuitive 
+
+race_acs$white <- c(race_acs$B02001_002E)
+race_acs$black <- c(race_acs$B02001_003E)
+race_acs$native <- c(race_acs$B02001_004E)
+race_acs$asian <- c(race_acs$B02001_005E)
+race_acs$hawpi <- c(race_acs$B02001_006E)
+race_acs$other <- c(race_acs$B02001_007E)
+race_acs$mixed <- c(race_acs$B02001_008E+ 
+                      race_acs$B02001_009E + 
+                      race_acs$B02001_010E)
+
+# Make new columns for Household Income 
 
 inc_acs$hhi1 <- c(inc_acs$B19001_002E + 
                     inc_acs$B19001_003E + 
@@ -429,85 +481,112 @@ inc_acs$hhi5 <- c(inc_acs$B19001_014E +
 
 inc_acs$hhi6 <- c(inc_acs$B19001_016E)
 inc_acs$hhi7 <- c(inc_acs$B19001_017E) 
-```
 
-```{r new-bins, eval = FALSE}
 
-# Make new bins for School Enrollment by level of school 
-# se1: highschool or under | se2: undergraduate or graduate or professional school | se3: not enrolled in school 
+# Make new columns for Employment status
+# emp1 : civilian labor employed | emp0: civilian labor unemployed
 
-# enr_acs$se1 <- c(enr_acs$B14001_003E + 
-#                    enr_acs$B14001_004E + 
-#                    enr_acs$B14001_005E + 
-#                    enr_acs$B14001_006E + 
-#                    enr_acs$B14001_006E)
+ emp_acs$emp0 <- c(emp_acs$B23025_007E)
+ emp_acs$emp1 <- c(emp_acs$B23025_002E)
+
+# Rename columns for Nativity data. 
+#Make new columns for Nativity status
+#for0: native born | for1: foreign born
+
+ nat_acs$for0 <- c(nat_acs$B05012_002E)
+ nat_acs$for1 <- c(nat_acs$B05012_003E)
+
+# Make new columns for Educational Attainment
+# et1: no highschool diploma | et2: highschool diploma, equivalent, or some college  | et3: associates or bachelor's |et4: graduate or professional school
+
+ edu_acs$et1 <- c(edu_acs$B15003_002E +
+                    edu_acs$B15003_003E +
+                    edu_acs$B15003_004E +
+                    edu_acs$B15003_005E +
+                    edu_acs$B15003_006E +
+                    edu_acs$B15003_007E +
+                    edu_acs$B15003_008E +
+                    edu_acs$B15003_009E +
+                    edu_acs$B15003_010E +
+                    edu_acs$B15003_011E +
+                    edu_acs$B15003_012E +
+                    edu_acs$B15003_013E +
+                    edu_acs$B15003_014E +
+                    edu_acs$B15003_015E +
+                    edu_acs$B15003_016E)
+
+ edu_acs$et2 <- c(edu_acs$B15003_017E +
+                    edu_acs$B15003_018E +
+                    edu_acs$B15003_019E +
+                    edu_acs$B15003_020E)
+
+ edu_acs$et3 <- c(edu_acs$B15003_021E +
+                    edu_acs$B15003_022E)
+
+ edu_acs$et4 <- c(edu_acs$B15003_023E +
+                    edu_acs$B15003_024E +
+                    edu_acs$B15003_025E)
+
+# Make new bins for School Enrollment by level of school
+# se1: highschool or under | se2: undergraduate or graduate or professional school | se3: not enrolled in school
+
+# enr_acs$se1 <- c(enr_acs$B14001_003E +
+#                     enr_acs$B14001_004E +
+#                     enr_acs$B14001_005E +
+#                     enr_acs$B14001_006E +
+#                     enr_acs$B14001_006E)
 # 
 # enr_acs$se2 <- c(enr_acs$B14001_008E + enr_acs$B14001_009E)
 # 
 # enr_acs$se3 <- c(enr_acs$B14001_010E)
-
-# Make new columns for Employment status 
-# emp1 : civilian labor employed | emp0: civilian labor unemployed 
-
-# emp_acs$emp0 <- c(emp_acs$B23025_007E)
-# emp_acs$emp1 <- c(emp_acs$B23025_002E)
-
-# Rename columns for Nativity data. I don't need to add anything up here. 
-
-# Make new columns for Nativity status
-# for0: native born | for1: foreign born 
-
-# nat_acs$for0 <- c(nat_acs$B05012_002E)
-# nat_acs$for1 <- c(nat_acs$B05012_003E)
-
-# Make new columns for Educational Attainment 
-# et1: no highschool diploma | et2: highschool diploma, equivalent, or some college  | et3: associates or bachelor's | et4: graduate or professional school 
-
-# edu_acs$et1 <- c(edu_acs$B15003_002E + 
-#                    edu_acs$B15003_003E + 
-#                    edu_acs$B15003_004E + 
-#                    edu_acs$B15003_005E + 
-#                    edu_acs$B15003_006E + 
-#                    edu_acs$B15003_007E + 
-#                    edu_acs$B15003_008E + 
-#                    edu_acs$B15003_009E + 
-#                    edu_acs$B15003_010E + 
-#                    edu_acs$B15003_011E + 
-#                    edu_acs$B15003_012E + 
-#                    edu_acs$B15003_013E + 
-#                    edu_acs$B15003_014E + 
-#                    edu_acs$B15003_015E + 
-#                    edu_acs$B15003_016E)
-# 
-# edu_acs$et2 <- c(edu_acs$B15003_017E + 
-#                    edu_acs$B15003_018E + 
-#                    edu_acs$B15003_019E + 
-#                    edu_acs$B15003_020E)
-# 
-# edu_acs$et3 <- c(edu_acs$B15003_021E + 
-#                    edu_acs$B15003_022E)
-
-# edu_acs$et4 <- c(edu_acs$B15003_023E + 
-#                    edu_acs$B15003_024E + 
-#                    edu_acs$B15003_0025E)
-
 ```
 
-```{r hhi-filter}
+## Compile all of the ACS data that I transformed into one large table 
+```{r compile}
+
 # filter acs data by the columns that you want to keep in the new aggregate table
 
-hhi_table <- inc_acs %>%
-  dplyr::select(STATEFP, COUNTYFP, TRACTCE,GEOID, NAME.x, ALAND, AWATER, geometry, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
+hhi_tab <- inc_acs %>%
+  dplyr::select(TRACTCE, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
+
+emp_tab <- emp_acs %>% 
+  dplyr::select(TRACTCE, emp0, emp1)
+
+for_tab <- nat_acs %>% 
+  dplyr::select(TRACTCE, for0, for1)
+
+edu_tab <- edu_acs %>% 
+  dplyr::select(TRACTCE, et1, et2, et3, et4)
+
+race_tab <- race_acs %>% 
+  dplyr::select(TRACTCE, white, black, native, asian, hawpi, mixed)
 
 ```
+
+## Overlays and Join to Geometry 
+
+```{r join-geom}
+# I guess I'll do a bunch of inner joins with dplyr idk 
+
+acs_tracts <- hhi_tab %>%
+  inner_join(emp_tab)%>%
+  inner_join(for_tab)%>% 
+  inner_join(edu_tab)%>% 
+  inner_join(race_tab)
+
+```
+
 ```{r tracts-clip-chi, warning = FALSE}
 
-chi_tracts <- st_intersection(hhi_table, chi)%>%
-  st_collection_extract("POLYGON")
+# Use intersect overlay tool to clip all tracts in Cook County by Chicago's boundaries
+chi_tracts <- st_intersection(cook_tracts, chi)%>%
+  st_collection_extract("POLYGON")%>%
+  inner_join(acs_tracts)
 
 #class(chi_tracts)
 
 plot(chi_tracts$geometry)
+
 # chi_tracts_m <- leaflet() %>% 
 #                   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
 #                   addPolygons(data = chi_tracts, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
@@ -519,7 +598,7 @@ plot(chi_tracts$geometry)
 
 To create the catchment areas I will create Thiessen/Voronoi polygons. This was done by using the st_voronoi() function on the library points data. Finally, I clipped the voronoi diagram by the Chicago shapefile. 
 
-```{r voronoi-polygons, warning = FALSE}
+```{r voronoi-polygons, warning = FALSE, dpi=30, out.width="500px", out.height="500px"}
 
 # Generate Thiessen/Voronoi polygons from library points
 vor1 <- st_union(points)%>%
@@ -591,6 +670,7 @@ chi_pop <- st_as_sf(st_intersection(blocks_pop, chi)%>%
 # 
 # chi_pop_m
 ```
+
 ### Join Population Data and Population Weighted Re-Aggregation 
 
 
@@ -600,14 +680,16 @@ My intentions for this part of the workflow were to generate a layer of centroid
 
 # Generate centroids for the blocks
 
-centroids <- st_centroid(chi_pop)
+cent_gen <- st_centroid(chi_pop)
 
-# Check geometry type
-#st_geometry_type(centroids)
+centroids <- cent_gen %>%
+  dplyr::select(POP20)
+
 
 # Plot the centroids on the map
 
-plot(centroids$geometry)
+# plot(centroids$geometry)
+# 
 # centroids_m <- leaflet() %>%
 #                 addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
 #                 addPolygons(data = chi_tracts, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
@@ -616,26 +698,34 @@ plot(centroids$geometry)
 # centroids_m
 ```
 
-Theoretically if I group by the tract ID: TRACTCE and summarize the population column I should get a sum population value for every tract. However, when I grouped by and summarized, I got around 200 less observations than my original layer of tracts in Chicago. The map reveals that many tracts aren't receving the population data for some reason.
+Theoretically if I group by the tract ID: TRACTCE and summarize the population column I should get a sum population value for every tract. However, when I grouped by and summarized, I got around 200 less observations than my original layer of tracts in Chicago. The map reveals that many tracts aren't receiving the population data for some reason.
 
-```{r pop-agg-prep-1}
+```{r pop-agg-prep-1, dpi=30, out.width="500px", out.height="500px"}
 
 # Join block centroids to tracts 
 
-tracts_centroids <- st_join(chi_tracts, centroids)
+tr_cent <- st_join(chi_tracts, centroids)%>%
+  dplyr::select(TRACTCE, POP20)
 
 # select for the columns that I want to see 
-tracts_pop <- tracts_centroids %>%
-  dplyr::select(TRACTCE,GEOID.x, NAME.x, ALAND, AWATER, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7, POP20)
+# tr_pop <- tracts_centroids %>%
+#   dplyr::select(TRACTCE,GEOID.x, NAME.x, ALAND, AWATER, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7, POP20)
+
 #Summarize population by tract 
 
-group_tract <- tracts_pop %>%
-                 group_by(TRACTCE) %>%
-                 summarise(sum_pop = sum(POP20))
+group_tract <- aggregate(tr_cent$POP20, by = list(tr_cent$TRACTCE), FUN= sum)
 
-tracts_pop <- st_join(tracts_pop, group_tract)
-# Join sum_pop back to the chi_tracts table 
-chi_tracts2 <- st_join(group_tract, chi_tracts)
+group_tract$TRACTCE <- c(group_tract$Group.1)
+group_tract$SUMPOP <- c(group_tract$x)
+
+group_tract2 <- group_tract %>% 
+                dplyr::select(TRACTCE,SUMPOP)
+
+fn_trct <- dplyr::left_join(chi_tracts, group_tract2)
+
+```
+
+```{r map-tracts-pop}
 
 # Map!
 
@@ -643,10 +733,11 @@ qpal2 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), group_tract$sum_pop, n = 10)
 
 group_tract_m <- leaflet() %>%
               addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
-              addPolygons(data = tracts_pop, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal2(sum_pop))
+              addPolygons(data = fn_trct, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal2(SUMPOP))
 
 
 group_tract_m
+
 
 ```
 
@@ -654,18 +745,18 @@ group_tract_m
 
 # Intersect tracts with Voronoi polygons 
 
-# vorclip_tracts <- st_intersection(tracts_pop, vor_chi)%>%
-   # st_collection_extract("POLYGON")
+vorclip_tracts <- st_intersection(fn_trct, vor_chi)%>%
+st_collection_extract("POLYGON")
 
 # Join block centroids to new intersection polygon to get population data into the tracts again
 
- # intersect_pop <- st_join(vorclip_tracts, centroids)
+intersect_pop <- st_join(vorclip_tracts, centroids)
 
 # Summarize population by intersected tracts 
 
-# int_grp_tract <- intersect_pop %>%
-               # group_by(TRACTCE) %>%
-               # summarise(sum_pop2 = sum(POP20.x))
+int_grp_tract <- intersect_pop %>%
+group_by(TRACTCE) %>%
+summarise(sum_pop2 = sum(POP20.x))
 
 # Map!
 # qpal3 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), int_grp_tract$sum_pop2, n = 10)
