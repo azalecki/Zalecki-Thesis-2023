@@ -770,19 +770,33 @@ group_tract_m
 
 # Intersect tracts with Voronoi polygons 
 
-vorclip_tracts <- st_intersection(fn_trct, vor_chi)%>%
-st_collection_extract("POLYGON")
+vorclip_tracts <- st_union(fn_trct, vor_chi)%>%
+  st_collection_extract("POLYGON")
+
+vorclip_joined <- st_join(vor_chi, vorclip_tracts)
 
 # Join block centroids to new intersection polygon to get population data into the tracts again
 
-intersect_pop <- st_join(vorclip_tracts, centroids)
+int_cent <- st_join(vorclip_tracts, centroids)#%>%
+  #dplyr::select(TRACTCE, POP20)
 
 # Summarize population by intersected tracts 
 
-int_grp_tract <- intersect_pop %>%
-group_by(TRACTCE) %>%
-summarise(sum_pop2 = sum(POP20.x))
+int_tract <- aggregate(int_cent$POP20, by = list(int_cent$TRACTCE), FUN= sum)
 
+int_tract$TRACTCE <- c(group_tract$Group.1)
+int_tract$SUMPOP2 <- c(group_tract$x)
+
+int_tract2 <- int_tract %>% 
+                dplyr::select(TRACTCE,SUMPOP2)
+
+vor_tracts <- dplyr::left_join(vorclip_tracts, int_tract2)
+
+plot(vor_tracts$geometry)
+
+```
+
+```{r map-vor-tracts}
 # Map!
 # qpal3 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), int_grp_tract$sum_pop2, n = 10)
 # 
@@ -792,7 +806,6 @@ summarise(sum_pop2 = sum(POP20.x))
 #               
 # 
 # int_grp_tract_m
-
 ```
 
 ```{r pop-agg-calc, eval = FALSE}
