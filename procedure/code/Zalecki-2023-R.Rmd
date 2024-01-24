@@ -773,26 +773,28 @@ group_tract_m
 vorclip_tracts <- st_union(fn_trct, vor_chi)%>%
   st_collection_extract("POLYGON")
 
+plot(vorclip_tracts$geometry)
+
 vorclip_joined <- st_join(vor_chi, vorclip_tracts)
 
 # Join block centroids to new intersection polygon to get population data into the tracts again
 
-int_cent <- st_join(vorclip_tracts, centroids)#%>%
+# int_cent <- st_join(vorclip_tracts, centroids)#%>%
   #dplyr::select(TRACTCE, POP20)
 
 # Summarize population by intersected tracts 
 
-int_tract <- aggregate(int_cent$POP20, by = list(int_cent$TRACTCE), FUN= sum)
-
-int_tract$TRACTCE <- c(group_tract$Group.1)
-int_tract$SUMPOP2 <- c(group_tract$x)
-
-int_tract2 <- int_tract %>% 
-                dplyr::select(TRACTCE,SUMPOP2)
-
-vor_tracts <- dplyr::left_join(vorclip_tracts, int_tract2)
-
-plot(vor_tracts$geometry)
+# int_tract <- aggregate(int_cent$POP20, by = list(int_cent$TRACTCE), FUN= sum)
+# 
+# int_tract$TRACTCE <- c(group_tract$Group.1)
+# int_tract$SUMPOP2 <- c(group_tract$x)
+# 
+# int_tract2 <- int_tract %>% 
+#                 dplyr::select(TRACTCE,SUMPOP2)
+# 
+# vor_tracts <- dplyr::left_join(vorclip_tracts, int_tract2)
+# 
+# plot(vor_tracts$geometry)
 
 ```
 
