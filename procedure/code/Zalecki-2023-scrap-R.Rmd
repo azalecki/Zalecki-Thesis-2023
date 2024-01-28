@@ -1,0 +1,82 @@
+---
+title: "scrap"
+output: html_document
+date: "2024-01-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r pop-agg-prep-2, warning = FALSE, eval = FALSE}
+
+# Intersect tracts with Voronoi polygons 
+
+<<<<<<< HEAD
+# vorclip_tracts <- st_union(fn_trct, vor_chi)%>%
+#   st_collection_extract("POLYGON")
+# 
+# vorclip_joined <- st_join(vor_chi, vorclip_tracts)
+=======
+vorclip_tracts <- st_union(fn_trct, vor_chi)%>%
+  st_collection_extract("POLYGON")
+
+plot(vorclip_tracts$geometry)
+
+vorclip_joined <- st_join(vor_chi, vorclip_tracts)
+>>>>>>> f18e9e24282712f425b159ebb91de62d97ef0049
+
+# Join block centroids to new intersection polygon to get population data into the tracts again
+
+# int_cent <- st_join(vorclip_tracts, centroids)#%>%
+  #dplyr::select(TRACTCE, POP20)
+
+# Summarize population by intersected tracts 
+
+# int_tract <- aggregate(int_cent$POP20, by = list(int_cent$TRACTCE), FUN= sum)
+# 
+# int_tract$TRACTCE <- c(group_tract$Group.1)
+# int_tract$SUMPOP2 <- c(group_tract$x)
+# 
+# int_tract2 <- int_tract %>% 
+#                 dplyr::select(TRACTCE,SUMPOP2)
+# 
+# vor_tracts <- dplyr::left_join(vorclip_tracts, int_tract2)
+# 
+# plot(vor_tracts$geometry)
+
+```
+
+```{r map-vor-tracts}
+# Map!
+# qpal3 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), int_grp_tract$sum_pop2, n = 10)
+# 
+# int_grp_tract_m <- leaflet() %>% 
+#            #   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+#            #   addPolygons(data = int_grp_tract, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal3(sum_pop2))
+#               
+# 
+# int_grp_tract_m
+```
+
+```{r pop-agg-calc, eval = FALSE}
+
+# Population Weighted Re-Aggregation 
+ 
+# Calculate population weight ratio (PWR) | fragment population / source population = population weight ratio
+
+# output <- mutate(input_data,propPop = secPOP20 / POP20)
+
+# Multiply source fields by the PWR to estimate the population weighted value  
+
+# output <- mutate(final_table,
+          # hhi1_w = hhi1 * pwr,
+          # hhi2_w = hhi2 * pwr,
+          # hhi3_w = hhi3 * pwr,
+          # hhi4_w = hhi4 * pwr,
+          # hhi5_w = hhi5 * pwr,
+          # hhi6_w = hhi6 * pwr,
+          # hhi7_w = hhi7 * pwr)
+
+```
