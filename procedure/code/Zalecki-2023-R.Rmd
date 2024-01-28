@@ -19,7 +19,7 @@ Rising inequality and increased privatization of space in urban landscapes is br
 - `Key words`: public space, libraries, population weighted aggregation, service areas, demographics 
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
 - `Date created`: 11/28/2023
-- `Date modified`: 12/5/2023
+- `Date modified`: 1/28/2024
 - `Spatial Coverage`: Chicago, IL
 - `Spatial Resolution`: Census Tracts, Census Blocks, Library Service Areas
 - `Spatial Reference System`: EPSG:32616 
@@ -101,14 +101,19 @@ knitr::opts_chunk$set(
 knitr::opts_chunk$set(dev="png")
 
 ```
-
 ## Data and variables
 
 Each of the next subsections describes one data source.
+Primary data sources are to include the following. 
+
+```{r load-website-data}
+```
+
 Secondary data sources for the study are to include the following. 
 
 ### Chicago Shapefile 
-```{r load-places, eval= FALSE}
+
+```{r download-places, eval= FALSE}
 # Load in all places defined by the US Census 
 il_places <- places(state = "IL")
 
@@ -118,7 +123,8 @@ saveRDS(il_places, here("data", "raw", "public", "il_places.RDS"))
 
 ```
 
-```{r chicago-bounds}
+```{r load-clip-places}
+
 # Load Census places for Illinois
 il_places <- readRDS(here("data", "raw", "public", "il_places.RDS"))
 
@@ -133,7 +139,9 @@ chi <- il_places %>%
 plot(chi$geometry)
 
 ```
+
 ```{r download-tracts-shp, eval= FALSE}
+
 cook_tracts <- tracts(
                 state = "IL",
                 county = "Cook",
@@ -165,7 +173,7 @@ I will add a more comprehensive list of variables as my senior research project 
 census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 ```
 
-```{r acs-data, eval = FALSE}
+```{r query-acs-data, eval = FALSE}
 
 # Query Social & Demographic data tables with Census tract boundaries
 
@@ -173,7 +181,7 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
   as_acs <- get_acs(
     geography = "tract",
-    table = "S0101",
+    table = "B01001",
     county = "Cook",
     state = "IL",
     year = 2021,
@@ -351,7 +359,7 @@ saveRDS(m_inc_acs, here("data", "raw", "public", "m_inc_acs.RDS"))
 
 ```
 
-```{r load-acs-data}
+```{r load-queried-acs-data}
 
 #Load ACS Data 
 
@@ -369,7 +377,6 @@ inc_acs <- readRDS(here("data", "raw", "public", "inc_acs.RDS"))
 m_inc_acs <- readRDS(here("data", "raw", "public", "m_inc_acs.RDS"))
 
 ```
-
 
 ### Public Library Locations
 
@@ -434,6 +441,7 @@ saveRDS(blocks, here("data", "raw", "public", "blocks.RDS"))
 ```
 
 ```{r load-blocks}
+
 #Load block data 
 
 blocks <- readRDS(here("data", "raw", "public", "blocks.RDS"))
@@ -490,12 +498,11 @@ Because I will be doing a population weighted aggregation I have to prepare the 
 ```{r filter-blocks, warning = FALSE}
 
 # Filter out blocks with no population data 
-blocks_pop <- blocks %>%
-  dplyr::filter(POP20 > 0)
-
 # Clip blocks by Chicago Boundary and simplify table by selecting for columns that I will need 
 
-chi_pop <- st_as_sf(st_intersection(blocks_pop, chi)%>%
+chi_pop <- blocks %>%
+  dplyr::filter(POP20 > 0)%>%
+  st_as_sf(st_intersection(blocks_pop, chi)%>%
   select(TRACTCE20, BLOCKCE20, GEOID, ALAND20, AWATER20, HOUSING20, POP20, geometry))%>%
   st_collection_extract("POLYGON")
 
@@ -537,15 +544,15 @@ To create the catchment areas I will create Thiessen/Voronoi polygons. This was 
 ```{r voronoi-polygons, warning = FALSE, dpi=30, out.width="500px", out.height="500px"}
 
 # Generate Thiessen/Voronoi polygons from library points
-vor1 <- st_union(points)%>%
+
+vorpoly <- st_union(points)%>%
   st_voronoi()%>%
-  st_collection_extract("POLYGON")
+  st_collection_extract("POLYGON")%>%
+  st_sf %>%
+  st_cast
 
-vorpoly = vor1 %>%
-st_sf %>%
-st_cast
+
 #Plot polygons to make sure they loaded
-
 plot(vorpoly)
 #class(vorpoly)
 
@@ -560,11 +567,11 @@ vor_chi <- st_intersection(vorpoly2, chi)
 
 vor_map <- tmap_mode("plot")
            tm_shape(vor_chi)+
-              tm_borders(col="#7146BD" )+
+              tm_borders(col="black" )+
            tm_shape(chi) + 
               tm_borders() +
            tm_shape(points) +
-              tm_dots(size=0.05, col = "orange")
+              tm_dots(size=0.05, col = "red")
            
 vor_map
 
@@ -580,14 +587,59 @@ After creating the new classifications, I selected for the columns that I wanted
 
 # Make new columns for Age categories 
 
-# as_acs$child <- c(as_acs$)
-# as_acs$teen <- c(as_acs$)
-# as_acs$yad <- c(as_acs$)
-# as_acs$mad <- c(as_acs$)
-# as_acs$sen <- c(as_acs$)
+as_acs$child <- c(as_acs$B01001_003E + 
+                  as_acs$B01001_004E + 
+                  as_acs$B01001_005E + 
+                  as_acs$B01001_027E + 
+                  as_acs$B01001_028E + 
+                  as_acs$B01001_029E)
 
-# as_acs$t_male <- c(as_acs$)
-# as_acs$t_fem <- c(as_acs$)
+as_acs$teen <- c(as_acs$B01001_006E + 
+                 as_acs$B01001_007E +
+                 as_acs$B01001_030E +
+                 as_acs$B01001_031E)
+
+as_acs$yad <- c(as_acs$B01001_008E + 
+                as_acs$B01001_009E + 
+                as_acs$B01001_010E +
+                as_acs$B01001_011E + 
+                as_acs$B01001_032E + 
+                as_acs$B01001_033E + 
+                as_acs$B01001_034E + 
+                as_acs$B01001_035E)
+
+as_acs$mad <- c(as_acs$B01001_012E + 
+                as_acs$B01001_013E +
+                as_acs$B01001_014E + 
+                as_acs$B01001_015E +
+                as_acs$B01001_016E +
+                as_acs$B01001_036E +
+                as_acs$B01001_037E +
+                as_acs$B01001_038E +
+                as_acs$B01001_039E +
+                as_acs$B01001_040E)
+
+as_acs$sen <- c(as_acs$B01001_017E + 
+                as_acs$B01001_018E + 
+                as_acs$B01001_019E +
+                as_acs$B01001_020E +
+                as_acs$B01001_021E +
+                as_acs$B01001_022E +
+                as_acs$B01001_023E + 
+                as_acs$B01001_024E +
+                as_acs$B01001_025E +
+                as_acs$B01001_041E +
+                as_acs$B01001_042E +
+                as_acs$B01001_043E +
+                as_acs$B01001_044E +
+                as_acs$B01001_045E +
+                as_acs$B01001_046E +
+                as_acs$B01001_047E +
+                as_acs$B01001_048E +
+                as_acs$B01001_049E)
+
+as_acs$t_male <- c(as_acs$B01001_002E)
+as_acs$t_fem <- c(as_acs$B01001_026E)
 
 # Rename Race columns to make the names more intuitive 
 
@@ -684,7 +736,7 @@ inc_acs$hhi7 <- c(inc_acs$B19001_017E)
 # enr_acs$se3 <- c(enr_acs$B14001_010E)
 ```
 
-```{r compile}
+```{r filter-acs}
 
 # filter acs data by the columns that you want to keep in the new aggregate table
 
@@ -694,7 +746,7 @@ hhi_tab <- inc_acs %>%
 emp_tab <- emp_acs %>% 
   dplyr::select(TRACTCE, emp0, emp1)
 
-for_tab <- nat_acs %>% 
+nat_tab <- nat_acs %>% 
   dplyr::select(TRACTCE, for0, for1)
 
 edu_tab <- edu_acs %>% 
@@ -706,34 +758,35 @@ race_tab <- race_acs %>%
 m_inc_tab <- m_inc_acs %>%
   dplyr::select(TRACTCE, B19013_001E)
 
+as_tab <- as_acs %>% 
+  dplyr::select(TRACTCE, child, teen, yad, mad, sen)
+
 # Compile all of the ACS data that I transformed into one large table 
-acs_tracts <- hhi_tab %>%
+fc_tracts <- hhi_tab %>%
   inner_join(emp_tab)%>%
-  inner_join(for_tab)%>% 
+  inner_join(nat_tab)%>% 
   inner_join(edu_tab)%>% 
   inner_join(race_tab)%>%
-  inner_join(m_inc_tab)
+  inner_join(m_inc_tab)%>% 
+  inner_join(as_tab)%>%
+  st_as_sf()
 
 ```
 
 ## Overlays and Join to Geometry 
 
-```{r tracts-clip-chi, warning = FALSE}
-
+```{r tracts-clip-chi}
 # Use intersect overlay tool to clip all tracts in Cook County by Chicago's boundaries
-chi_tracts <- st_intersection(cook_tracts, chi)%>%
+
+clip_tracts <- st_intersection(cook_tracts,chi)%>%
   st_collection_extract("POLYGON")%>%
-  inner_join(acs_tracts)
+  st_drop_geometry()%>%
+  left_join(fc_tracts, by= "TRACTCE")
 
 #class(chi_tracts)
 
-plot(chi_tracts$geometry)
+plot(clip_tracts$geometry)
 
-# chi_tracts_m <- leaflet() %>% 
-#                   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-#                   addPolygons(data = chi_tracts, color = "blue", weight = 1, fillColor= "white", fillOpacity = 0.2)
-# 
-# chi_tracts_m
 ```
 
 ### Join Tract Level Data to Blocks  
@@ -747,36 +800,86 @@ My intentions for this part of the workflow were to generate a layer of centroid
 cent_gen <- st_centroid(chi_pop)
 
 centroids <- cent_gen %>%
-  dplyr::select(POP20)
+  dplyr::select(TRACTCE20, BLOCKCE20, POP20)
 
 ```
 
 ```{r centroids-to-tracts, warning = FALSE}
-# Join block centroids to tracts 
 
-tr_cent <- st_join(chi_tracts, centroids)%>%
+# Join block centroids to tracts to calculate population data for the tract
+
+tr_cent <- st_join(fc_tracts, centroids)%>%
   dplyr::select(TRACTCE, POP20)%>%
   group_by(TRACTCE)%>%
   summarize(sumPOP = sum(POP20))%>%
   st_drop_geometry()
 
 # map 
-tmap_mode("plot")
-tm_shape(tr_cent) +
-  tm_polygons(col="sumPOP", style= "jenks", title="Population Tract", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# tmap_mode("plot")
+# tm_shape(tr_cent) +
+#   tm_polygons(col="sumPOP", style= "jenks", title="Population Tract", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 #join pop data to acs table
-race_pop <- left_join(acs_tracts, tr_cent, by = "TRACTCE")%>%
+
+acs_tracts <-
+ left_join(fc_tracts, tr_cent, by = "TRACTCE")%>%
   dplyr::filter(sumPOP > 0)
 
 ```
 
+```{r lib-id}
+
+# Join library data to centroids and select for variables that I want to keep 
+
+lib_ids <- st_join(centroids, vor_chi)%>%
+              dplyr::select(TRACTCE20, BLOCKCE20, POP20, NAME)
+
+```
+
+
 ```{r join-trct-to-blcks}
+# Join soc variables to blocks with libids
 
-left join acs tracts to blocks
-need to get library names 
+f_blocks <- st_join(lib_ids, acs_tracts)
 
+f_blocks <- f_blocks %>%
+             mutate(prPOP = POP20/sumPOP,
+                    pr_minc = B19013_001E * prPOP,
+                    pr_black = black * prPOP, 
+                    pr_for1 = for1 * prPOP) %>%
+             group_by(NAME) %>%
+             summarize(sum_minc = sum(pr_minc),
+                       sum_black = sum(pr_black),
+                       sum_for = sum(pr_for1)) %>%
+             st_drop_geometry()
+
+
+# after I group by and summarize i just need to join that data by a unique id back to the catchment area geometry so I can map with it
+
+s_areas <- left_join(vor_chi, f_blocks, by= "NAME")%>%
+            dplyr::select(NAME, Census.Tracts, sum_minc, sum_black, sum_for)
+              
+```
+
+```{r map-s_areas}
+tmap_mode("plot")
+tm_shape(s_areas) +
+  tm_polygons(col="sum_minc", title="Med. Household Income", lwd= 0, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tmap_mode("plot")
+tm_shape(s_areas) +
+  tm_polygons(col="sum_black", title="Black", lwd= 0, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tmap_mode("plot")
+tm_shape(s_areas) +
+  tm_polygons(col="sum_for", title="Foreign", lwd= 0, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+```
+### Joining my website data
+```{r}
 ```
 
 ## Maps for Pete, Friday 1/26/2024
@@ -1082,69 +1185,6 @@ tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8
 
 ```
 
-
-```{r pop-agg-prep-2, warning = FALSE, eval = FALSE}
-
-# Intersect tracts with Voronoi polygons 
-
-# vorclip_tracts <- st_union(fn_trct, vor_chi)%>%
-#   st_collection_extract("POLYGON")
-# 
-# vorclip_joined <- st_join(vor_chi, vorclip_tracts)
-
-# Join block centroids to new intersection polygon to get population data into the tracts again
-
-# int_cent <- st_join(vorclip_tracts, centroids)#%>%
-  #dplyr::select(TRACTCE, POP20)
-
-# Summarize population by intersected tracts 
-
-# int_tract <- aggregate(int_cent$POP20, by = list(int_cent$TRACTCE), FUN= sum)
-# 
-# int_tract$TRACTCE <- c(group_tract$Group.1)
-# int_tract$SUMPOP2 <- c(group_tract$x)
-# 
-# int_tract2 <- int_tract %>% 
-#                 dplyr::select(TRACTCE,SUMPOP2)
-# 
-# vor_tracts <- dplyr::left_join(vorclip_tracts, int_tract2)
-# 
-# plot(vor_tracts$geometry)
-
-```
-
-```{r map-vor-tracts}
-# Map!
-# qpal3 <- colorQuantile(c("#F5FDF1", "#0D5B1E"), int_grp_tract$sum_pop2, n = 10)
-# 
-# int_grp_tract_m <- leaflet() %>% 
-#            #   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-#            #   addPolygons(data = int_grp_tract, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal3(sum_pop2))
-#               
-# 
-# int_grp_tract_m
-```
-
-```{r pop-agg-calc, eval = FALSE}
-
-# Population Weighted Re-Aggregation 
- 
-# Calculate population weight ratio (PWR) | fragment population / source population = population weight ratio
-
-# output <- mutate(input_data,propPop = secPOP20 / POP20)
-
-# Multiply source fields by the PWR to estimate the population weighted value  
-
-# output <- mutate(final_table,
-          # hhi1_w = hhi1 * pwr,
-          # hhi2_w = hhi2 * pwr,
-          # hhi3_w = hhi3 * pwr,
-          # hhi4_w = hhi4 * pwr,
-          # hhi5_w = hhi5 * pwr,
-          # hhi6_w = hhi6 * pwr,
-          # hhi7_w = hhi7 * pwr)
-
-```
 
 # Results
 
