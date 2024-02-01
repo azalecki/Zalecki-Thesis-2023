@@ -1,5 +1,5 @@
 ---
-title: "Analysis of Neighborhood Characteristics of Library Catchment Areas in Chicago, IL"
+title: "Who is the public in public libraries? Exploring the spatial variations of the changing dynamics of library services in Chicago, IL"
 author: "Alexandra Ola Zalecki"
 date: "`r Sys.Date()`"
 output: html_document
@@ -16,7 +16,7 @@ Rising inequality and increased privatization of space in urban landscapes is br
 
 ## Study Metadata
 
-- `Key words`: public space, libraries, population weighted aggregation, service areas, demographics 
+- `Key words`: public space, libraries, population weighted aggregation, service areas 
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
 - `Date created`: 11/28/2023
 - `Date modified`: 1/28/2024
@@ -31,7 +31,6 @@ Rising inequality and increased privatization of space in urban landscapes is br
 This study is a reproduction of my own **an original study**. As part of my independent research work with Professor Peter Nelson, I created a workflow in QGIS to answer the question: How do library service catchment areas differ along lines of race, class, gender, etc? In order to streamline this research and make it reproducible/replicable I decided to reproduce the workflow in R and create a research compendium for it as part of my final independent project in GEOG0361: Open GIScience.
 
 This research aims to answer the following two questions. How do library service catchment areas differ along lines of race, class, gender, etc. How do the public services in these catchment areas reflect the nature of their local constituents? 
-
 
 # Materials and procedure
 
@@ -107,6 +106,9 @@ Each of the next subsections describes one data source.
 Primary data sources are to include the following. 
 
 ```{r load-website-data}
+# Load website survey data from the Github
+
+web = read_csv("https://raw.githubusercontent.com/azalecki/Zalecki-2023/main/data/raw/public/WS_1_29_24.csv")
 ```
 
 Secondary data sources for the study are to include the following. 
@@ -382,11 +384,11 @@ m_inc_acs <- readRDS(here("data", "raw", "public", "m_inc_acs.RDS"))
 
 Data for Chicago Public Library locations comes in CSV format with coordinate data. Prior to uploading the CSV file into the Github site I used Microsoft Excel to manually separate the Longitude and Latitude values into two separate columns. No other data manipulation was done in Excel. 
 
-```{r cpl-data, warning = FALSE, dpi=30, out.width="500px", out.height="500px"}
+```{r cpl-data, warning = FALSE}
 
 #Load Chicago Public Library addresses from CSV file found in Folder: data/raw/public/CPL-Locations.csv
 
-cpl_data = read_csv("https://raw.githubusercontent.com/azalecki/Zalecki-2023/main/data/raw/public/CPL-Locations.csv")
+cpl_data = read_csv("https://raw.githubusercontent.com/azalecki/Zalecki-2023/main/data/raw/public/CPL-Locations.csv") %>% tibble()
 
 # Create points layer using Longitude and Latitude columns and set projection to UTM Zone 16, EPSG: 32616
 
@@ -500,35 +502,26 @@ Because I will be doing a population weighted aggregation I have to prepare the 
 # Filter out blocks with no population data 
 # Clip blocks by Chicago Boundary and simplify table by selecting for columns that I will need 
 
-chi_pop <- blocks %>%
-  dplyr::filter(POP20 > 0)%>%
-  st_as_sf(st_intersection(blocks_pop, chi)%>%
-  select(TRACTCE20, BLOCKCE20, GEOID, ALAND20, AWATER20, HOUSING20, POP20, geometry))%>%
+
+chi_blocks <- st_intersection(blocks, chi)%>%
   st_collection_extract("POLYGON")
 
-#st_geometry_type(chi_pop)
-#plot(chi_pop$POP20)
+chi_pop <- chi_blocks %>%
+             dplyr::filter(POP20 > 0)%>%
+             select(TRACTCE20, 
+                    BLOCKCE20, 
+                    GEOID, 
+                    ALAND20, 
+                    AWATER20, 
+                    HOUSING20, 
+                    POP20, 
+                    geometry)
+
+class(chi_pop)
+plot(chi_pop$geometry)
 ```
 
-```{r leaflet-map-chi-blocks, warning = FALSE, eval = FALSE}
-
-pal <- colorNumeric(
-  palette = c("#F5FDF1", "#0D5B1E"),
-  domain = chi_pop$POP20)
-
-#binpal <- colorBin(c("#F5FDF1", "#0D5B1E"), chi_pop$POP20, 500, pretty = FALSE)
-
-qpal <- colorQuantile(c("#F5FDF1", "#0D5B1E"), chi_pop$POP20, n = 10)
-
-chi_pop_m <- leaflet() %>%
-              addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
-              addPolygons(data = chi_pop, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,color = ~qpal(POP20))#%>%
-              #addPolygons(data = vor_chi, color = "#7146BD", weight = 1, fillColor= "#E7E0F4", fillOpacity = 0.2)
-
-chi_pop_m
-```
-
-```{r map-blocks}
+```{r map-blocks, eval = FALSE}
 
 tmap_mode("plot")
 tm_shape(chi_pop) +
@@ -541,7 +534,7 @@ tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8
 
 To create the catchment areas I will create Thiessen/Voronoi polygons. This was done by using the st_voronoi() function on the library points data. Finally, I clipped the voronoi diagram by the Chicago shapefile. 
 
-```{r voronoi-polygons, warning = FALSE, dpi=30, out.width="500px", out.height="500px"}
+```{r voronoi-polygons, warning = FALSE}
 
 # Generate Thiessen/Voronoi polygons from library points
 
@@ -721,19 +714,31 @@ inc_acs$hhi7 <- c(inc_acs$B19001_017E)
  edu_acs$et4 <- c(edu_acs$B15003_023E +
                     edu_acs$B15003_024E +
                     edu_acs$B15003_025E)
+ 
+
+#Language spoken at home
+lang_acs$lang1 <- lang_acs$B06007_002E
+lang_acs$lang2 <- lang_acs$B06007_003E
+lang_acs$lang3 <- lang_acs$B06007_006E
+
+lang_acs$lang4 <- c(lang_acs$B06007_004E + 
+                  lang_acs$B06007_007E)
+
+lang_acs$lang5 <- c(lang_acs$B06007_005E + 
+                  lang_acs$B06007_008E)
 
 # Make new bins for School Enrollment by level of school
 # se1: highschool or under | se2: undergraduate or graduate or professional school | se3: not enrolled in school
 
-# enr_acs$se1 <- c(enr_acs$B14001_003E +
-#                     enr_acs$B14001_004E +
-#                     enr_acs$B14001_005E +
-#                     enr_acs$B14001_006E +
-#                     enr_acs$B14001_006E)
-# 
-# enr_acs$se2 <- c(enr_acs$B14001_008E + enr_acs$B14001_009E)
-# 
-# enr_acs$se3 <- c(enr_acs$B14001_010E)
+enr_acs$se1 <- c(enr_acs$B14001_003E +
+                    enr_acs$B14001_004E +
+                    enr_acs$B14001_005E +
+                    enr_acs$B14001_006E +
+                    enr_acs$B14001_006E)
+
+enr_acs$se2 <- c(enr_acs$B14001_008E + enr_acs$B14001_009E)
+
+enr_acs$se3 <- c(enr_acs$B14001_010E)
 ```
 
 ```{r filter-acs}
@@ -753,7 +758,7 @@ edu_tab <- edu_acs %>%
   dplyr::select(TRACTCE, et1, et2, et3, et4)
 
 race_tab <- race_acs %>% 
-  dplyr::select(TRACTCE, white, black, native, asian, hawpi, mixed)
+  dplyr::select(TRACTCE, white, black, native, asian, hawpi, mixed, latinx)
 
 m_inc_tab <- m_inc_acs %>%
   dplyr::select(TRACTCE, B19013_001E)
@@ -761,15 +766,31 @@ m_inc_tab <- m_inc_acs %>%
 as_tab <- as_acs %>% 
   dplyr::select(TRACTCE, child, teen, yad, mad, sen)
 
+lang_tab <-lang_acs %>%
+  dplyr::select(TRACTCE, lang1, lang2, lang3, lang4, lang5)
+
+enr_tab <- enr_acs %>%
+  dplyr::select(TRACTCE, se1, se2, se3)
+
 # Compile all of the ACS data that I transformed into one large table 
-fc_tracts <- hhi_tab %>%
+acs_table <- hhi_tab %>%
   inner_join(emp_tab)%>%
   inner_join(nat_tab)%>% 
   inner_join(edu_tab)%>% 
   inner_join(race_tab)%>%
   inner_join(m_inc_tab)%>% 
   inner_join(as_tab)%>%
-  st_as_sf()
+  inner_join(lang_tab)%>%
+  inner_join(enr_tab)
+
+# %>%
+#   st_as_sf()%>%
+#   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+# 
+# fc_tracts_shp <- st_intersection(fc_tracts, chi) %>%
+#    st_collection_extract("POLYGON")
+
+# plot(fc_tracts_shp$geometry)
 
 ```
 
@@ -778,14 +799,13 @@ fc_tracts <- hhi_tab %>%
 ```{r tracts-clip-chi}
 # Use intersect overlay tool to clip all tracts in Cook County by Chicago's boundaries
 
-clip_tracts <- st_intersection(cook_tracts,chi)%>%
-  st_collection_extract("POLYGON")%>%
-  st_drop_geometry()%>%
-  left_join(fc_tracts, by= "TRACTCE")
+chi_tracts <- st_intersection(cook_tracts, chi) %>%
+   st_collection_extract("POLYGON")%>%
+   left_join(acs_table, by= "TRACTCE")
 
-#class(chi_tracts)
+class(chi_tracts)
 
-plot(clip_tracts$geometry)
+plot(chi_tracts$geometry.x)
 
 ```
 
@@ -802,38 +822,48 @@ cent_gen <- st_centroid(chi_pop)
 centroids <- cent_gen %>%
   dplyr::select(TRACTCE20, BLOCKCE20, POP20)
 
+# Map 
+tmap_mode("plot")
+tm_shape(centroids) +
+    tm_dots(size=0.05, col = "black")
+
+
 ```
 
 ```{r centroids-to-tracts, warning = FALSE}
 
 # Join block centroids to tracts to calculate population data for the tract
 
-tr_cent <- st_join(fc_tracts, centroids)%>%
+tr_cent <- st_join(chi_tracts, centroids)%>%
   dplyr::select(TRACTCE, POP20)%>%
-  group_by(TRACTCE)%>%
-  summarize(sumPOP = sum(POP20))%>%
-  st_drop_geometry()
+   group_by(TRACTCE)%>%
+   summarize(sumPOP = sum(POP20))
 
-# map 
-# tmap_mode("plot")
-# tm_shape(tr_cent) +
-#   tm_polygons(col="sumPOP", style= "jenks", title="Population Tract", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 #join pop data to acs table
 
-acs_tracts <-
- left_join(fc_tracts, tr_cent, by = "TRACTCE")%>%
+acs_centroids <-
+ st_join(tr_cent, chi_tracts, by = "TRACTCE")%>%
   dplyr::filter(sumPOP > 0)
+
+acs_tracts <- st_join( chi_tracts, tr_cent, by = "TRACTCE")%>%
+  dplyr::filter(sumPOP > 0)
+
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="sumPOP", title="Population Tract", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 ```
 
+
 ```{r lib-id}
 
-# Join library data to centroids and select for variables that I want to keep 
+#Join library data to centroids and select for variables that I want to keep 
 
 lib_ids <- st_join(centroids, vor_chi)%>%
-              dplyr::select(TRACTCE20, BLOCKCE20, POP20, NAME)
+              dplyr::select(TRACTCE20, BLOCKCE20, POP20, NAME)%>%
+  st_drop_geometry()
 
 ```
 
@@ -841,23 +871,25 @@ lib_ids <- st_join(centroids, vor_chi)%>%
 ```{r join-trct-to-blcks}
 # Join soc variables to blocks with libids
 
-f_blocks <- st_join(lib_ids, acs_tracts)
+
+f_blocks <- left_join(lib_ids, acs_centroids, by= c("TRACTCE20" = "TRACTCE.x"))%>%
+  st_as_sf()
 
 f_blocks <- f_blocks %>%
-             mutate(prPOP = POP20/sumPOP,
+  mutate(prPOP = POP20/sumPOP,
                     pr_minc = B19013_001E * prPOP,
-                    pr_black = black * prPOP, 
+                    pr_black = black * prPOP,
                     pr_for1 = for1 * prPOP) %>%
-             group_by(NAME) %>%
-             summarize(sum_minc = sum(pr_minc),
-                       sum_black = sum(pr_black),
-                       sum_for = sum(pr_for1)) %>%
-             st_drop_geometry()
+   group_by(NAME.x) %>%
+   summarize(sum_minc = sum(pr_minc),
+             sum_black = sum(pr_black),
+             sum_for = sum(pr_for1))%>%
+            st_drop_geometry()
 
 
 # after I group by and summarize i just need to join that data by a unique id back to the catchment area geometry so I can map with it
 
-s_areas <- left_join(vor_chi, f_blocks, by= "NAME")%>%
+s_areas <- left_join(vor_chi, f_blocks, by= c("NAME" = "NAME.x"))%>%
             dplyr::select(NAME, Census.Tracts, sum_minc, sum_black, sum_for)
               
 ```
@@ -865,334 +897,314 @@ s_areas <- left_join(vor_chi, f_blocks, by= "NAME")%>%
 ```{r map-s_areas}
 tmap_mode("plot")
 tm_shape(s_areas) +
-  tm_polygons(col="sum_minc", title="Med. Household Income", lwd= 0, border.col="lightgrey") +
+  tm_polygons(col="sum_minc",style= "jenks", title="Med. Household Income", lwd= 0, border.col="lightgrey") +
 tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 tmap_mode("plot")
 tm_shape(s_areas) +
-  tm_polygons(col="sum_black", title="Black", lwd= 0, border.col="lightgrey") +
+  tm_polygons(col="sum_black",style= "jenks", title="Black", lwd= 0, border.col="lightgrey") +
 tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 tmap_mode("plot")
 tm_shape(s_areas) +
-  tm_polygons(col="sum_for", title="Foreign", lwd= 0, border.col="lightgrey") +
+  tm_polygons(col="sum_for",style= "jenks", title="Foreign", lwd= 0, border.col="lightgrey") +
 tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 ```
-### Joining my website data
+### Join website data to soc-demo data
 ```{r}
-```
-
-## Maps for Pete, Friday 1/26/2024
-```{r median-income-map}
-
-m_inc_acs <- get_acs(
-   geography = "tract",
-   table = "B19013",
-   county = "Cook",
-   state = "IL",
-   year = 2021,
-   output = "wide",
-   cache_table = TRUE,
-   geometry = TRUE,
-   keep_geo_vars = TRUE) %>%
-   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
-
-hist(m_inc_acs$B19013_001E)
-
-m_inc_trct <- left_join(m_inc_acs, tr_cent, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
-
-m_inc_trct <- mutate(m_inc_trct, m_inc_pc= B19013_001E/sumPOP )
-
-brks_prty <- classIntervals(m_inc_trct$B19013_001E, 6, style = "jenks")$brks
-
-#qtm(m_inc_shp, fill = "B19013_001E", fill.palette = "RdYlGn")
-
-class(m_inc_trct)
-
-tmap_mode("plot")
-tm_shape(m_inc_trct) +
-  tm_polygons(col="B19013_001E", breaks=brks_prty, title="Med. Household Income", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 ```
 
-```{r maj-race-map}
-#load in acs data
-race_acs2 <- get_acs(
-    geography = "tract",
-    table = "B02001",
-    county = "Cook",
-    state = "IL",
-    year = 2021,
-    output = "wide",
-    cache_table = TRUE,
-    geometry = TRUE,
-    keep_geo_vars = TRUE)%>%
-    st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+### join website data to voronoi shapefile 
+```{r}
 
-#rename column names
-race_acs2$white <- c(race_acs2$B02001_002E)
-race_acs2$black <- c(race_acs2$B02001_003E)
-race_acs2$native <- c(race_acs2$B02001_004E)
-race_acs2$asian <- c(race_acs2$B02001_005E)
-race_acs2$hawpi <- c(race_acs2$B02001_006E)
-race_acs2$other <- c(race_acs2$B02001_007E)
-race_acs2$mixed <- c(race_acs2$B02001_008E+ 
-                      race_acs2$B02001_009E + 
-                      race_acs2$B02001_010E)
+web_vor_chi <- left_join(vor_chi, web, by="NAME")
 
-#join pop data to 
-race_pop <- left_join(race_acs2, tr_cent, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
-
-#field calculate percents 
-
-race_pop <- mutate(race_pop, pctBlack= black/sumPOP )%>%
-            mutate(race_pop, pctWhite= white/sumPOP)%>%
-            mutate(race_pop, pctAsian= asian/sumPOP)%>%
-            mutate(race_pop, pctMixed= mixed/sumPOP)
-
-
-race_pop <- mutate(race_pop, majRace = case_when(
-             pctWhite > .60 ~ 'White',
-             pctBlack > .60 ~ 'Black',
-             pctAsian > .60 ~ 'Asian',
-             pctMixed > .60 ~ 'Mixed',
-             TRUE ~ 'Other'))
-
-#map 
 tmap_mode("plot")
-tm_shape(race_pop) +
-  tm_polygons(col="majRace", title="Racial Majority", lwd= 0, border.col="lightgrey") +
+tm_shape(web_vor_chi) +
+  tm_polygons(col="CIRC", style="jenks", title="Circulation", lwd= NA, border.col="lightgrey") +
 tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-```
-```{r nativity}
+tm_shape(web_vor_chi) +
+  tm_polygons(col="VIST", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-nat_acs <- get_acs(
-    geography = "tract",
-    table = "B05012",
-    county = "Cook",
-    state = "IL",
-    year = 2021,
-    output = "wide",
-    cache_table = TRUE,
-    geometry = TRUE,
-    keep_geo_vars = TRUE)%>%
-    st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+tm_shape(web_vor_chi) +
+  tm_polygons(col="COMPSES", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-nat_acs$for0 <- c(nat_acs$B05012_002E)
- nat_acs$for1 <- c(nat_acs$B05012_003E)
- 
- #join pop data to 
- 
-nat_pop <- left_join(nat_acs, tr_cent, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
+tm_shape(web_vor_chi) +
+  tm_polygons(col="IP_HHELP", title="In Person Homework Help", lwd= NA, palette = c("purple", "green"))+
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-nat_pop <- mutate(nat_pop, pctFor= for1/sumPOP )%>%
-            mutate(nat_pop, pctNat= for0/sumPOP)
-          
-# nat_pop <- mutate(nat_pop, majBorn = case_when(
-#              pctFor > .51 ~ 'Maj Foreign',
-#              pctNat > .51 ~ 'Maj Native',
-#              TRUE ~ 'Other'))
+tm_shape(web_vor_chi) +
+  tm_polygons(col="HSPOT", title="HotSpot Lending", lwd= NA, palette = c("purple", "green"))+
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-#map 
-tmap_mode("plot")
-tm_shape(nat_pop) +
-  tm_polygons(col="pctFor", title="Pct Foreign", lwd= 0, border.col="lightgrey") +
+tm_shape(web_vor_chi) +
+  tm_polygons(col="UMEDIA", title="YouMedia", lwd= NA, palette = c("purple", "green"))+
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tm_shape(web_vor_chi) +
+  tm_polygons(col="CHBOOK", title="Chromebook Lending", lwd= NA, palette = c("purple", "green"))+
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tm_shape(web_vor_chi) +
+  tm_polygons(col="MHSS", title="Mental Health and Social Services", lwd= NA, palette = c("purple", "green"))+
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tm_shape(web_vor_chi) +
+  tm_polygons(col="CITCORNER", title="Citizen Corner", lwd= NA, palette = c("purple", "green"))+
 tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 
-```
-```{r map-emp}
-emp_acs2 <- get_acs(
-    geography = "tract",
-    table = "B23025",
-    county = "Cook",
-    state = "IL",
-    year = 2021,
-    output = "wide",
-    cache_table = TRUE,
-    geometry = TRUE,
-    keep_geo_vars = TRUE)%>%
-    st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
-
-emp_acs2$emp0 <- emp_acs2$B23025_007E
-emp_acs2$emp1 <- emp_acs2$B23025_002E
-
-#join pop data to 
- 
-emp_pop <- left_join(emp_acs2, tr_cent, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
-
-emp_pop <- mutate(emp_pop, pctEmp= emp1/sumPOP )%>%
-            mutate(emp_pop, pctUnemp= emp0/sumPOP)
-
-#nat
-
-tmap_mode("plot")
-tm_shape(emp_pop) +
-  tm_polygons(col="pctEmp", title="Pct Employed per Capita", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(emp_pop) +
-  tm_polygons(col="pctUnemp", title="Pct Unemployed per Capita", lwd= 0, border.col="lightgrey") +
+tm_shape(web_vor_chi) +
+  tm_polygons(col="NE_MATER", title="Non English Language Materials", lwd= NA, palette = c("purple", "green"))+
 tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 
 
 ```
-```{r lang-map}
-lang_acs <- get_acs(
-     geography = "tract",
-     table = "B06007",
-     county = "Cook",
-     state = "IL",
-     year = 2016,
-     output = "wide",
-     cache_table = TRUE,
-     geometry = TRUE,
-     keep_geo_vars = TRUE)%>%
-    st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
-
-lang_acs$lang1 <- lang_acs$B06007_002E
-lang_acs$lang2 <- lang_acs$B06007_003E
-lang_acs$lang3 <- lang_acs$B06007_006E
-
-lang_acs$lang4 <- c(lang_acs$B06007_004E + 
-                  lang_acs$B06007_007E)
-
-lang_acs$lang5 <- c(lang_acs$B06007_005E + 
-                  lang_acs$B06007_008E)
-
-#join pop data to 
- 
-lang_pop <- left_join(lang_acs, tr_cent, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
-
-lang_pop <- mutate(lang_pop, pctEng= lang1/sumPOP )%>%
-            mutate(lang_pop, pctSpan= lang2/sumPOP)%>%
-            mutate(lang_pop, pctOther= lang3/sumPOP)%>%
-            mutate(lang_pop, pctWell= lang4/sumPOP)%>%
-            mutate(lang_pop, pctNWell= lang5/sumPOP)
-
-#case
-race_pop <- mutate(lang_pop, majLang = case_when(
-             pctWell > .60 ~ 'Very Well',
-             pctNWell > .60 ~ 'Not Very Well',
-             TRUE ~ 'Other'))
-#map
-
-tmap_mode("plot")
-tm_shape(race_pop) +
-  tm_polygons(col="pctSpan", title="Pct Spanish Speakers", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(race_pop) +
-  tm_polygons(col="pctOther", title="Pct Other Language", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(race_pop) +
-  tm_polygons(col="pctNWell", title="Pct Speak English Not Very Well", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-
-```
-
-```{r edu-att-map}
-
- edu_acs <- get_acs(
-    geography = "tract",
-    table = "B15003",
-    county = "Cook",
-    state = "IL",
-    year = 2021,
-    output = "wide",
-    cache_table = TRUE,
-    geometry = TRUE,
-    keep_geo_vars = TRUE)%>%
-    st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
-
-edu_acs$et1 <- c(edu_acs$B15003_002E +
-                    edu_acs$B15003_003E +
-                    edu_acs$B15003_004E +
-                    edu_acs$B15003_005E +
-                    edu_acs$B15003_006E +
-                    edu_acs$B15003_007E +
-                    edu_acs$B15003_008E +
-                    edu_acs$B15003_009E +
-                    edu_acs$B15003_010E +
-                    edu_acs$B15003_011E +
-                    edu_acs$B15003_012E +
-                    edu_acs$B15003_013E +
-                    edu_acs$B15003_014E +
-                    edu_acs$B15003_015E +
-                    edu_acs$B15003_016E)
-
- edu_acs$et2 <- c(edu_acs$B15003_017E +
-                    edu_acs$B15003_018E +
-                    edu_acs$B15003_019E +
-                    edu_acs$B15003_020E)
-
- edu_acs$et3 <- c(edu_acs$B15003_021E +
-                    edu_acs$B15003_022E)
-
- edu_acs$et4 <- c(edu_acs$B15003_023E +
-                    edu_acs$B15003_024E +
-                    edu_acs$B15003_025E)
- #join pop data to 
-edu_pop <- left_join(edu_acs, tr_cent, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
-
-#field calculate percents 
-
-edu_pop <- mutate(edu_pop, pctET1= et1/sumPOP )%>%
-            mutate(edu_pop, pctET2= et2/sumPOP)%>%
-            mutate(edu_pop, pctET3= et3/sumPOP)%>%
-            mutate(edu_pop, pctET4= et4/sumPOP)
-
-# edu_pop <- mutate(edu_pop, majET = case_when(
-#              pctET1 > .50 ~ 'no hs dip',
-#              pctET2 > .50 ~ 'hs dip or eq',
-#              pctET3 > .50 ~ 'as or bac',
-#              pctET4 > .50 ~ 'grad or prof'))
-
-tmap_mode("plot")
-tm_shape(edu_pop) +
-  tm_polygons(col="pctET1", title="Pct No High Dip", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(edu_pop) +
-  tm_polygons(col="pctET2", title="Pct High Dip or Eq", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(edu_pop) +
-  tm_polygons(col="pctET3", title="Pct Assoc. or Bach.", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(edu_pop) +
-  tm_polygons(col="pctET4", title="Pct Grad or Prof", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-
-```
-
 
 # Results
 
-Results currently unavailable until I can debug my population weighted aggregation workflow. 
+##Tract Maps 
 
+###Median Income
+
+```{r medinc-tract-map}
+
+# Median Household Income
+
+# Check out histogram
+hist(acs_tracts$B19013_001E)
+
+# Map
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="B19013_001E", style="jenks", title="Med. Household Income", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+
+```
+###Racial Majority
+```{r majrac-tract-map}
+# Majority Race
+acs_tracts <- mutate(acs_tracts, pctBlack= black/sumPOP )%>%
+              mutate(acs_tracts, pctWhite= white/sumPOP)%>%
+              mutate(acs_tracts, pctAsian= asian/sumPOP)%>%
+              mutate(acs_tracts, pctMixed= mixed/sumPOP)%>%
+              mutate(acs_tracts, pctLatinx= latinx/sumPOP)
+
+# Case function for race categories
+acs_tracts <- mutate(acs_tracts, majRace = case_when(
+             pctWhite > .55 ~ 'White',
+             pctBlack > .55 ~ 'Black',
+             pctAsian > .55 ~ 'Asian',
+             pctLatinx > .55 ~ 'LatinX',
+             TRUE ~ 'Other'))
+
+# Map 
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="majRace", title="Racial Majority", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+```
+###Nativity
+
+```{r nat-tract-map}
+# Nativity
+acs_tracts <- mutate(acs_tracts, pctFor= for1/sumPOP )%>%
+            mutate(acs_tracts, pctNat= for0/sumPOP)
+
+# Check out histogram
+hist(acs_tracts$for1)
+
+# Map 
+
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="for1", style="jenks", title="Total Foreign", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+# tmap_mode("plot")
+# tm_shape(acs_tracts) +
+#   tm_polygons(col="pctFor", style="quantile", title="Pct Foreign", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+```
+###Employment
+```{r emp-tract-maps}
+
+acs_tracts <- mutate(acs_tracts, pctEmp= emp1/sumPOP)%>%
+            mutate(acs_tracts, pctUnemp= emp0/sumPOP)
+
+hist(acs_tracts$emp1)
+
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="emp1",style="jenks", title="Total Employed", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+# tmap_mode("plot")
+# tm_shape(acs_tracts) +
+#   tm_polygons(col="pctEmp",style="quantile", title="Pct Employed", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+
+# tmap_mode("plot")
+# tm_shape(acs_tracts) +
+#   tm_polygons(col="pctUnemp", title="Pct Unemployed per Capita", lwd= 0, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+```
+
+###Educational attainment
+```{r edu-att-tract-map}
+
+#field calculate percents 
+
+acs_tracts <- mutate(acs_tracts, pctET1= et1/sumPOP )%>%
+            mutate(acs_tracts, pctET2= et2/sumPOP)%>%
+            mutate(acs_tracts, pctET3= et3/sumPOP)%>%
+            mutate(acs_tracts, pctET4= et4/sumPOP)
+
+# Totals
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="et1", style= "jenks", title="Total No High Dip", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="et2", style= "jenks", title="Total High Dip or Eq", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="et3", style= "jenks", title="Total Assoc. or Bach.", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="et4", style= "jenks", title="Total Grad or Prof", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+#Percents
+
+# tmap_mode("plot")
+# tm_shape(acs_tracts) +
+#   tm_polygons(col="pctET1", style= "quantile", title="Pct No High Dip", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# 
+# tmap_mode("plot")
+# tm_shape(acs_tracts) +
+#   tm_polygons(col="pctET2",style= "quantile", title="Pct High Dip or Eq", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# 
+# tmap_mode("plot")
+# tm_shape(acs_tracts) +
+#   tm_polygons(col="pctET3",style= "quantile", title="Pct Assoc. or Bach.", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# 
+# tmap_mode("plot")
+# tm_shape(acs_tracts) +
+#   tm_polygons(col="pctET4",style= "quantile", title="Pct Grad or Prof", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+
+```
+
+###Language spoken at home
+```{r lang-map}
+
+#Field calculate 
+acs_tracts <- mutate(acs_tracts, pctEng= lang1/sumPOP )%>%
+            mutate(acs_tracts, pctSpan= lang2/sumPOP)%>%
+            mutate(acs_tracts, pctOther= lang3/sumPOP)%>%
+            mutate(acs_tracts, pctWell= lang4/sumPOP)%>%
+            mutate(acs_tracts, pctNWell= lang5/sumPOP)
+
+#case
+acs_tracts <- mutate(acs_tracts, majLang = case_when(
+             pctWell > .60 ~ 'Very Well',
+             pctNWell > .60 ~ 'Not Very Well',
+             TRUE ~ 'Other'))
+
+#map
+
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="lang2", style="jenks", title="Total Spanish Speakers", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="lang3",style="jenks", title="Total Other Language", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="lang4",style="jenks", title="Total Speak English Not Very Well", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+```
+
+##Descriptive Statistics for Web Survey
+
+```{r m-sd-table-2}
+# Table of means and standard deviation for explanatory variables
+
+means <- web %>% summarise(
+                  m_circ = mean(CIRC),
+                  m_vist = mean(VIST), 
+                  m_hspot = mean(HSPOT),
+                  m_citcorn = mean(CITCORNER),
+                  m_cybnav = mean(CYBNAV),
+                  m_strooms = mean(STROOMS),
+                  m_umedia = mean(UMEDIA),
+                  m_neng = mean(NE_MATER),
+                  m_comp = mean(COMP),
+                  m_compses = mean(COMPSES),
+                  m_mhss = mean(MHSS))%>%
+                  tibble()%>%
+                  t()
+
+sds <- web %>% summarise(
+                  sd_circ = sd(CIRC),
+                  sd_vist = sd(VIST), 
+                  sd_hspot = sd(HSPOT),
+                  sd_citcorn = sd(CITCORNER),
+                  sd_cybnav = sd(CYBNAV),
+                  sd_strooms = sd(STROOMS),
+                  sd_umedia = sd(UMEDIA),
+                  sd_neng = sd(NE_MATER),
+                  sd_comp = sd(COMP),
+                  sd_compses = sd(COMPSES),
+                  sd_mhss = sd(MHSS))%>%
+                  tibble()%>%
+                  t()
+print(means)
+print(sds)
+
+```
+
+```{r ws-histograms}
+
+ hist(web$CIRC)
+ hist(web$VIST)
+ hist(web$COMPSES)
+```
+
+```{r exclude-outliers}
+
+```
+
+```{r scatter-test}
+
+ggplot(web, aes(x = VIST, y = CIRC)) +
+  geom_point(size = 2) +
+  geom_text(aes(label = NAME), vjust = -1, size= 2)
+```
 # Discussion
 
-Discussion currently unavailable until I can debug my population weighted aggregation workflow. 
+Under construction. 
 
 # Integrity Statement
 
