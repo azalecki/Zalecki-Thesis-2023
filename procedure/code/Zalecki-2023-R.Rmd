@@ -881,9 +881,8 @@ f_blocks <- f_blocks %>%
                     pr_black = black * prPOP,
                     pr_for1 = for1 * prPOP) %>%
    group_by(NAME.x) %>%
-   summarize(sum_minc = sum(pr_minc),
-             sum_black = sum(pr_black),
-             sum_for = sum(pr_for1))%>%
+   summarize(sum_black = sum(pr_black, na.rm = TRUE)),
+            %>%
             st_drop_geometry()
 
 
