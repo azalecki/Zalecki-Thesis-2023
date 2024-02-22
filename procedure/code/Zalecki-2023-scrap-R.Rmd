@@ -80,3 +80,118 @@ vorclip_joined <- st_join(vor_chi, vorclip_tracts)
           # hhi7_w = hhi7 * pwr)
 
 ```
+
+#Scrap from 2/22/2024
+
+## Overlays and Join to Geometry 
+
+```{r tracts-clip-chi}
+# # Use intersect overlay tool to clip all tracts in Cook County by Chicago's boundaries
+# 
+# chi_tracts <- st_intersection(cook_tracts, chi) %>%
+#    st_collection_extract("POLYGON")%>%
+#    left_join(acs_table, by= "TRACTCE")
+# 
+# class(chi_tracts)
+# 
+# plot(chi_tracts$geometry.x)
+
+```
+### Join Tract Level Data to Blocks  
+
+My intentions for this part of the workflow were to generate a layer of centroids for the block data so I could join the population data to the tracts. I would do this two times. Once for the original tracts layer and a second time after I intersect the tracts with the voronoi diagram. I successfully generate a list of centroids for every block but when I join the centroids to the tracts layer, R makes a row for every centroid that was joined to a tract. This more than double the amount of observation in the data table. 
+
+```{r centroids, warning = FALSE}
+
+# Generate centroids for the blocks
+
+cent_gen <- st_centroid(chi_pop)
+
+centroids <- cent_gen %>%
+  dplyr::select(TRACTCE20, BLOCKCE20, POP20)
+
+# Map 
+tmap_mode("plot")
+tm_shape(centroids) +
+    tm_dots(size=0.05, col = "black")
+
+```
+
+```{r centroids-to-tracts, warning = FALSE}
+
+# Join block centroids to tracts to calculate population data for the tract
+
+tr_cent <- st_join(chi_tracts, centroids)%>%
+  dplyr::select(TRACTCE, POP20)%>%
+   group_by(TRACTCE)%>%
+   summarize(sumPOP = sum(POP20))
+
+
+#join pop data to acs table
+
+acs_centroids <-
+ st_join(tr_cent, chi_tracts, by = "TRACTCE")%>%
+  dplyr::filter(sumPOP > 0)
+
+acs_tracts <- st_join( chi_tracts, tr_cent, by = "TRACTCE")%>%
+  dplyr::filter(sumPOP > 0)
+
+tmap_mode("plot")
+tm_shape(acs_tracts) +
+  tm_polygons(col="sumPOP", title="Population Tract", lwd= NA, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+```
+
+```{r lib-id}
+
+#Join library data to centroids and select for variables that I want to keep 
+
+lib_ids <- st_join(centroids, vor_chi)%>%
+              dplyr::select(TRACTCE20, BLOCKCE20, POP20, NAME)%>%
+  st_drop_geometry()
+
+```
+
+```{r join-trct-to-blcks}
+# Join soc variables to blocks with libids
+
+
+f_blocks <- left_join(lib_ids, acs_centroids, by= c("TRACTCE20" = "TRACTCE.x"))%>%
+  st_as_sf()
+
+f_blocks <- f_blocks %>%
+  mutate(prPOP = POP20/sumPOP,
+                    pr_minc = B19013_001E * prPOP,
+                    pr_black = black * prPOP,
+                    pr_for1 = for1 * prPOP) %>%
+   group_by(NAME.x) %>%
+   summarize(sum_black = sum(pr_black, na.rm = TRUE)),
+            %>%
+            st_drop_geometry()
+
+
+# after I group by and summarize i just need to join that data by a unique id back to the catchment area geometry so I can map with it
+
+s_areas <- left_join(vor_chi, f_blocks, by= c("NAME" = "NAME.x"))%>%
+            dplyr::select(NAME, Census.Tracts, sum_minc, sum_black, sum_for)
+              
+```
+
+
+```{r map-s_areas}
+tmap_mode("plot")
+tm_shape(s_areas) +
+  tm_polygons(col="sum_minc",style= "jenks", title="Med. Household Income", lwd= 0, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tmap_mode("plot")
+tm_shape(s_areas) +
+  tm_polygons(col="sum_black",style= "jenks", title="Black", lwd= 0, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tmap_mode("plot")
+tm_shape(s_areas) +
+  tm_polygons(col="sum_for",style= "jenks", title="Foreign", lwd= 0, border.col="lightgrey") +
+tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+```

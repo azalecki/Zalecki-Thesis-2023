@@ -130,21 +130,59 @@ saveRDS(il_places, here("data", "raw", "public", "il_places.RDS"))
 # Load Census places for Illinois
 il_places <- readRDS(here("data", "raw", "public", "il_places.RDS"))
 
-# Filter out Chicago from Census Places
+```
+ 
+ 
+# Download block data from the 2020 Census for Cook County, IL  
+Because, the ACS data tables do not come with population data I have to bring in population data separately. Population data for this study is referenced at the block level for the whole of Cook County, IL. The year that the data is derived from is 2020.
 
-chi <- il_places %>%
-  dplyr::filter(NAME == 'Chicago')%>%
+```{r blocks-table}
+cook_blocks_tbl <-get_decennial(geography="block", state="IL", county="Cook", year=2020,
+                         variables=c(block_pop="P1_001N", block_hu="H1_001N")) %>% 
+  pivot_wider(id_cols = "GEOID", names_from = variable, values_from = value)
+
+saveRDS(cook_blocks_tbl, here("data", "raw", "public", "cook_blocks_tbl.RDS"))
+
+```
+  
+```{r blocks-shape}
+
+cook_blocks_shp <- get_decennial(
+  geography = "block",
+  table = "P1",
+  county = "Cook",
+  state = "IL",
+  year = 2020,
+  output = "wide",
+  cache_table = TRUE,
+  geometry = TRUE,
+  keep_geo_vars = TRUE) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-# Plot geometry
+saveRDS(cook_blocks_shp, here("data", "raw", "public", "cook_blocks_shp.RDS"))
 
-plot(chi$geometry)
+```
 
+```{r load-blocks}
+
+#Load block data 
+cook_blocks_tbl <- readRDS(here("data", "raw", "public", "cook_blocks_tbl.RDS"))
+cook_blocks_shp <- readRDS(here("data", "raw", "public", "cook_blocks_shp.RDS"))
+                  
+```
+# Download tract data from the 2021 American Community Survey(ACS) 
+```{r download-tract-table}
+cook_tracts_tbl <-get_decennial(geography="tract", state="IL", county="Cook", year=2020,
+                         variables=c(tract_pop="P1_001N", tract_hu="H1_001N")) %>% 
+  pivot_wider(id_cols = "GEOID", names_from = variable, values_from = value) %>% 
+  arrange(GEOID)
+
+saveRDS(cook_tracts_tbl, here("data", "raw", "public", "cook_tracts_tbl.RDS"))
 ```
 
 ```{r download-tracts-shp, eval= FALSE}
 
-cook_tracts <- tracts(
+cook_tracts_shp <- tracts(
                 state = "IL",
                 county = "Cook",
                 cb = FALSE,
@@ -152,20 +190,17 @@ cook_tracts <- tracts(
                 year = 2020)%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-saveRDS(cook_tracts, here("data", "raw", "public", "cook_tracts.RDS"))
+saveRDS(cook_tracts_shp, here("data", "raw", "public", "cook_tracts_shp.RDS"))
 
 ```
+```{r load-tracts}
 
-```{r load-tracts-shp}
-
-#Load in tracts for Chicago 
-
-cook_tracts <- readRDS(here("data", "raw", "public", "cook_tracts.RDS"))
-
+#Load tract data 
+cook_tracts_tbl <- readRDS(here("data", "raw", "public", "cook_tracts_tbl.RDS"))
+cook_tracts_shp <- readRDS(here("data", "raw", "public", "cook_tracts_shp.RDS"))
+                  
 ```
-### American Community Survey(ACS) Demographic Data 
-
-In order to simplify the workflow for this independent project I will be working with one variable, household, income that is derived from ACS data table B19001. Household income data is referenced at the Census tract level for the whole of Cook County. The year derived is 2021. 
+### Download social-demographic data from the 2021 American Community Survey(ACS) 
 
 I will add a more comprehensive list of variables as my senior research project progresses.
 
@@ -181,9 +216,7 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 
  # Age and Sex Table 
 
-  as_acs <- get_acs(
-    geography = "tract",
-    table = "B01001",
+  as_acs <- get_acs(geography = "tract",table = "B01001",
     county = "Cook",
     state = "IL",
     year = 2021,
@@ -396,18 +429,13 @@ points <- cpl_data %>%
   st_as_sf(coords = c("Longitude", "Latitude")) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-# Check class and geometry type of data 
-
-class(points)
-st_geometry_type(points)
-
 # Plot points on map with Chicago boundary 
 
-tmap_mode("plot")
-tm_shape(chi) + 
-  tm_borders() +
-tm_shape(points) +
-tm_dots(size=0.1, col = "red")
+# tmap_mode("plot")
+# tm_shape(chi) + 
+#   tm_borders() +
+# tm_shape(points) +
+# tm_dots(size=0.1, col = "red")
 
 # cpl_points_m <- leaflet() %>% 
 #                    addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
@@ -419,36 +447,6 @@ tm_dots(size=0.1, col = "red")
 
 ```
 
-### Population Data and Census Blocks for Cook County, IL   
-Because, the ACS data tables do not come with population data I have to bring in population data separately. Population data for this study is referenced at the block level for the whole of Cook County, IL. The year that the data is derived from is 2020.  
-
-```{r download-pop-blocks, eval= FALSE}
-
-# Query block geographic data from the 2020 Census population
-
-blocks <- get_decennial(
-  geography = "block",
-  table = "P1",
-  county = "Cook",
-  state = "IL",
-  year = 2020,
-  output = "wide",
-  cache_table = TRUE,
-  geometry = TRUE,
-  keep_geo_vars = TRUE) %>%
-  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
-
-saveRDS(blocks, here("data", "raw", "public", "blocks.RDS"))
-
-```
-
-```{r load-blocks}
-
-#Load block data 
-
-blocks <- readRDS(here("data", "raw", "public", "blocks.RDS"))
-                  
-```
 ## Prior observations  
 
 **Chicago Shapefile**
@@ -492,6 +490,19 @@ Visualizing catchment areas for libraries is my first objective because, unlike 
 
 ## Data transformations
 
+```{r clip-places}
+
+# Filter out Chicago from Census Places
+
+chi <- il_places %>%
+  dplyr::filter(NAME == 'Chicago')%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
+
+# Plot geometry
+
+plot(chi$geometry)
+```
+
 ### Block transformations
 ### Filter Population Blocks
 
@@ -499,34 +510,30 @@ Because I will be doing a population weighted aggregation I have to prepare the 
 
 ```{r filter-blocks, warning = FALSE}
 
-# Filter out blocks with no population data 
-# Clip blocks by Chicago Boundary and simplify table by selecting for columns that I will need 
+# Clip blocks shape by Chicago Boundary and simplify table by selecting for columns that I will need 
 
+chi_blocks_shp <- st_intersection(cook_blocks_shp, chi)%>%
+  st_collection_extract("POLYGON")%>%
+             select(GEOID,geometry)
 
-chi_blocks <- st_intersection(blocks, chi)%>%
-  st_collection_extract("POLYGON")
+class(chi_blocks_shp)
+plot(chi_blocks_shp$geometry)
 
-chi_pop <- chi_blocks %>%
-             dplyr::filter(POP20 > 0)%>%
-             select(TRACTCE20, 
-                    BLOCKCE20, 
-                    GEOID, 
-                    ALAND20, 
-                    AWATER20, 
-                    HOUSING20, 
-                    POP20, 
-                    geometry)
+# Clip tracts shape by Chicago Boundary and simplify table by selecting for columns that I will need 
+chi_tracts_shp <-  st_intersection(cook_tracts_shp, chi)%>%
+  st_collection_extract("POLYGON")%>%
+             select(GEOID,geometry)
 
-class(chi_pop)
-plot(chi_pop$geometry)
+class(chi_tracts_shp)
+plot(chi_tracts_shp$geometry)
 ```
 
 ```{r map-blocks, eval = FALSE}
 
-tmap_mode("plot")
-tm_shape(chi_pop) +
-  tm_polygons(col="POP20", style= "jenks", title="Population", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# tmap_mode("plot")
+# tm_shape(chi_pop) +
+#   tm_polygons(col="POP20", style= "jenks", title="Population", lwd= NA, border.col="lightgrey") +
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 ```
 
@@ -544,22 +551,17 @@ vorpoly <- st_union(points)%>%
   st_sf %>%
   st_cast
 
-
-#Plot polygons to make sure they loaded
-plot(vorpoly)
-#class(vorpoly)
-
 # Rejoin attributes from library points data to voronoi polygons 
 # Because I had to union the points prior to st_voronoi() function the library attributes were lost 
-vorpoly2 <- st_join(vorpoly, points)
+vorjoin <- st_join(vorpoly, points)
 
 # Clip voronoi polygons by Chicago boundary 
-vor_chi <- st_intersection(vorpoly2, chi)
+chi_vor <- st_intersection(vorjoin, chi)
     
 # Plot polygons on a map with librayr points
 
 vor_map <- tmap_mode("plot")
-           tm_shape(vor_chi)+
+           tm_shape(chi_vor)+
               tm_borders(col="black" )+
            tm_shape(chi) + 
               tm_borders() +
@@ -746,176 +748,64 @@ enr_acs$se3 <- c(enr_acs$B14001_010E)
 # filter acs data by the columns that you want to keep in the new aggregate table
 
 hhi_tab <- inc_acs %>%
-  dplyr::select(TRACTCE, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
+  dplyr::select(GEOID, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
 
 emp_tab <- emp_acs %>% 
-  dplyr::select(TRACTCE, emp0, emp1)
+  dplyr::select(GEOID, emp0, emp1)
 
 nat_tab <- nat_acs %>% 
-  dplyr::select(TRACTCE, for0, for1)
+  dplyr::select(GEOID, for0, for1)
 
 edu_tab <- edu_acs %>% 
-  dplyr::select(TRACTCE, et1, et2, et3, et4)
+  dplyr::select(GEOID, et1, et2, et3, et4)
 
 race_tab <- race_acs %>% 
-  dplyr::select(TRACTCE, white, black, native, asian, hawpi, mixed, latinx)
+  dplyr::select(GEOID, white, black, native, asian, hawpi, mixed, latinx)
 
 m_inc_tab <- m_inc_acs %>%
-  dplyr::select(TRACTCE, B19013_001E)
+  dplyr::select(GEOID, B19013_001E)
 
 as_tab <- as_acs %>% 
-  dplyr::select(TRACTCE, child, teen, yad, mad, sen)
+  dplyr::select(GEOID, child, teen, yad, mad, sen)
 
 lang_tab <-lang_acs %>%
-  dplyr::select(TRACTCE, lang1, lang2, lang3, lang4, lang5)
+  dplyr::select(GEOID, lang1, lang2, lang3, lang4, lang5)
 
 enr_tab <- enr_acs %>%
-  dplyr::select(TRACTCE, se1, se2, se3)
+  dplyr::select(GEOID, se1, se2, se3)
 
-# Compile all of the ACS data that I transformed into one large table 
-acs_table <- hhi_tab %>%
-  inner_join(emp_tab)%>%
-  inner_join(nat_tab)%>% 
-  inner_join(edu_tab)%>% 
-  inner_join(race_tab)%>%
-  inner_join(m_inc_tab)%>% 
-  inner_join(as_tab)%>%
-  inner_join(lang_tab)%>%
-  inner_join(enr_tab)
+# Join the ACS data to the tract table 
 
-# %>%
-#   st_as_sf()%>%
-#   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
-# 
-# fc_tracts_shp <- st_intersection(fc_tracts, chi) %>%
-#    st_collection_extract("POLYGON")
+acs_table <- inner_join(cook_tracts_tbl, race_tab, by = "GEOID")%>% 
+  mutate(tract=substr(GEOID, 1, 11)) %>% 
+  arrange(tract)
 
-# plot(fc_tracts_shp$geometry)
+# acs_table <- cook_tracts_tbl %>%
+#   inner_join(emp_tab)%>%
+#   inner_join(nat_tab)%>%
+#   inner_join(edu_tab)%>%
+#   inner_join(race_tab)%>%
+#   inner_join(m_inc_tab)%>%
+#   inner_join(as_tab)%>%
+#   inner_join(lang_tab)%>%
+#   inner_join(enr_tab)
 
 ```
+## Calculate Weights 
+```{r weights}
 
-## Overlays and Join to Geometry 
+weights <-cook_blocks_tbl %>% 
+  mutate(tract=substr(GEOID, 1, 11)) %>% 
+  arrange(tract) %>% 
+  merge(cook_tracts_tbl, by.x="tract", by.y="GEOID", all.x=T) %>% 
+  mutate(pop_wt=block_pop/tract_pop, hu_wt=block_hu/tract_hu)
 
-```{r tracts-clip-chi}
-# Use intersect overlay tool to clip all tracts in Cook County by Chicago's boundaries
-
-chi_tracts <- st_intersection(cook_tracts, chi) %>%
-   st_collection_extract("POLYGON")%>%
-   left_join(acs_table, by= "TRACTCE")
-
-class(chi_tracts)
-
-plot(chi_tracts$geometry.x)
-
-```
-
-### Join Tract Level Data to Blocks  
-
-My intentions for this part of the workflow were to generate a layer of centroids for the block data so I could join the population data to the tracts. I would do this two times. Once for the original tracts layer and a second time after I intersect the tracts with the voronoi diagram. I successfully generate a list of centroids for every block but when I join the centroids to the tracts layer, R makes a row for every centroid that was joined to a tract. This more than double the amount of observation in the data table. 
-
-```{r centroids, warning = FALSE}
-
-# Generate centroids for the blocks
-
-cent_gen <- st_centroid(chi_pop)
-
-centroids <- cent_gen %>%
-  dplyr::select(TRACTCE20, BLOCKCE20, POP20)
-
-# Map 
-tmap_mode("plot")
-tm_shape(centroids) +
-    tm_dots(size=0.05, col = "black")
-
-
-```
-
-```{r centroids-to-tracts, warning = FALSE}
-
-# Join block centroids to tracts to calculate population data for the tract
-
-tr_cent <- st_join(chi_tracts, centroids)%>%
-  dplyr::select(TRACTCE, POP20)%>%
-   group_by(TRACTCE)%>%
-   summarize(sumPOP = sum(POP20))
-
-
-#join pop data to acs table
-
-acs_centroids <-
- st_join(tr_cent, chi_tracts, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
-
-acs_tracts <- st_join( chi_tracts, tr_cent, by = "TRACTCE")%>%
-  dplyr::filter(sumPOP > 0)
-
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="sumPOP", title="Population Tract", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-```
-
-
-```{r lib-id}
-
-#Join library data to centroids and select for variables that I want to keep 
-
-lib_ids <- st_join(centroids, vor_chi)%>%
-              dplyr::select(TRACTCE20, BLOCKCE20, POP20, NAME)%>%
-  st_drop_geometry()
-
-```
-
-
-```{r join-trct-to-blcks}
-# Join soc variables to blocks with libids
-
-
-f_blocks <- left_join(lib_ids, acs_centroids, by= c("TRACTCE20" = "TRACTCE.x"))%>%
-  st_as_sf()
-
-f_blocks <- f_blocks %>%
-  mutate(prPOP = POP20/sumPOP,
-                    pr_minc = B19013_001E * prPOP,
-                    pr_black = black * prPOP,
-                    pr_for1 = for1 * prPOP) %>%
-   group_by(NAME.x) %>%
-   summarize(sum_black = sum(pr_black, na.rm = TRUE)),
-            %>%
-            st_drop_geometry()
-
-
-# after I group by and summarize i just need to join that data by a unique id back to the catchment area geometry so I can map with it
-
-s_areas <- left_join(vor_chi, f_blocks, by= c("NAME" = "NAME.x"))%>%
-            dplyr::select(NAME, Census.Tracts, sum_minc, sum_black, sum_for)
-              
-```
-
-```{r map-s_areas}
-tmap_mode("plot")
-tm_shape(s_areas) +
-  tm_polygons(col="sum_minc",style= "jenks", title="Med. Household Income", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(s_areas) +
-  tm_polygons(col="sum_black",style= "jenks", title="Black", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(s_areas) +
-  tm_polygons(col="sum_for",style= "jenks", title="Foreign", lwd= 0, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-```
-### Join website data to soc-demo data
-```{r}
+acs_table_wt <- inner_join(acs_table,weights, by= "tract")
 
 ```
 
 ### join website data to voronoi shapefile 
-```{r}
+```{r web_vor_shp}
 
 web_vor_chi <- left_join(vor_chi, web, by="NAME")
 
@@ -960,7 +850,6 @@ tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8
 tm_shape(web_vor_chi) +
   tm_polygons(col="NE_MATER", title="Non English Language Materials", lwd= NA, palette = c("purple", "green"))+
 tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
 
 
 ```
