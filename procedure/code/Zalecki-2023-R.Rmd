@@ -145,7 +145,7 @@ saveRDS(cook_blocks_tbl, here("data", "raw", "public", "cook_blocks_tbl.RDS"))
 
 ```
   
-```{r blocks-shape}
+```{r blocks-shape, eval= FALSE}
 
 cook_blocks_shp <- get_decennial(
   geography = "block",
@@ -884,47 +884,59 @@ tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8
 
 web_vor_chi <- left_join(chi_vor, web, by="NAME")
 
-tmap_mode("plot")
-tm_shape(web_vor_chi) +
-  tm_polygons(col="CIRC", style="jenks", title="Circulation", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="VIST", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+```
+```{r map-web}
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="COMPSES", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+#MAP!
+tm_circ<- tmap_mode("plot")
+          tm_shape(web_vor_chi) +
+          tm_polygons(col="CIRC", style="jenks", title="Circulation", lwd= NA, border.col="lightgrey") +
+          tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="IP_HHELP", title="In Person Homework Help", lwd= NA, palette = c("purple", "green"))+
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_circ
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="HSPOT", title="HotSpot Lending", lwd= NA, palette = c("purple", "green"))+
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_vist <- tm_shape(web_vor_chi) +
+           tm_polygons(col="VIST", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
+           tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="UMEDIA", title="YouMedia", lwd= NA, palette = c("purple", "green"))+
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_vist 
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="CHBOOK", title="Chromebook Lending", lwd= NA, palette = c("purple", "green"))+
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_compses <- tm_shape(web_vor_chi) +
+              tm_polygons(col="COMPSES", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
+              tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_compses
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="MHSS", title="Mental Health and Social Services", lwd= NA, palette = c("purple", "green"))+
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_til <-tm_shape(web_vor_chi) +
+        tm_polygons(col="IP_HHELP", title="In Person Homework Help", lwd= NA, palette = c("purple", "green"))+
+        tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-tm_shape(web_vor_chi) +
-  tm_polygons(col="CITCORNER", title="Citizen Corner", lwd= NA, palette = c("purple", "green"))+
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_til
 
-
-tm_shape(web_vor_chi) +
-  tm_polygons(col="NE_MATER", title="Non English Language Materials", lwd= NA, palette = c("purple", "green"))+
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_hspot <- tm_shape(web_vor_chi) +
+            tm_polygons(col="HSPOT", title="HotSpot Lending", lwd= NA, palette = c("purple", "green"))+
+            tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_hspot
+# tm_shape(web_vor_chi) +
+#   tm_polygons(col="UMEDIA", title="YouMedia", lwd= NA, palette = c("purple", "green"))+
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# 
+# tm_shape(web_vor_chi) +
+#   tm_polygons(col="CHBOOK", title="Chromebook Lending", lwd= NA, palette = c("purple", "green"))+
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# 
+# tm_shape(web_vor_chi) +
+#   tm_polygons(col="MHSS", title="Mental Health and Social Services", lwd= NA, palette = c("purple", "green"))+
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# 
+# tm_shape(web_vor_chi) +
+#   tm_polygons(col="CITCORNER", title="Citizen Corner", lwd= NA, palette = c("purple", "green"))+
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# 
+# 
+# tm_shape(web_vor_chi) +
+#   tm_polygons(col="NE_MATER", title="Non English Language Materials", lwd= NA, palette = c("purple", "green"))+
+# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 
 ```
