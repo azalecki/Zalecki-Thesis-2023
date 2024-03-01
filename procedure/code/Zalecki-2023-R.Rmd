@@ -429,58 +429,8 @@ points <- cpl_data %>%
   st_as_sf(coords = c("Longitude", "Latitude")) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-# Plot points on map with Chicago boundary 
-
-# tmap_mode("plot")
-# tm_shape(chi) + 
-#   tm_borders() +
-# tm_shape(points) +
-# tm_dots(size=0.1, col = "red")
-
-# cpl_points_m <- leaflet() %>% 
-#                    addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
-#                    addPolygons(data = chi, color = "gray", weight = 1, fillColor= "white", fillOpacity = 0.2)%>%
-#                    addCircles(data = points, weight = 3, opacity= 1, color = "orange") 
-# cpl_points_m
-
-
 
 ```
-
-## Prior observations  
-
-**Chicago Shapefile**
-
-- [ ] data is not available yet
-- [ ] data is available, but only metadata has been observed
-- [X] metadata and descriptive statistics have been observed
-- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
-- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
-
-**American Community Survey(ACS) Demographic Data** 
-
-- [ ] data is not available yet
-- [ ] data is available, but only metadata has been observed
-- [X] metadata and descriptive statistics have been observed
-- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
-- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
-
-**Public Library Locations**
-
-- [ ] data is not available yet
-- [ ] data is available, but only metadata has been observed
-- [X] metadata and descriptive statistics have been observed
-- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
-- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
-
-**Population Data and Census Blocks for Cook County, IL**  
-
-- [ ] data is not available yet
-- [ ] data is available, but only metadata has been observed
-- [X] metadata and descriptive statistics have been observed
-- [ ] metadata and a pilot test subset or sample of the full dataset have been observed
-- [ ] the full dataset has been observed. Explain how authors have already manipulated / explored the data.
-
 
 ## Bias and threats to validity
 
@@ -516,6 +466,11 @@ chi_blocks_shp <- st_intersection(cook_blocks_shp, chi)%>%
   st_collection_extract("POLYGON")%>%
              select(GEOID,geometry)
 
+chi_blocks_list<-chi_blocks_shp %>% 
+  select(GEOID) %>% 
+  as.tibble()
+
+
 class(chi_blocks_shp)
 plot(chi_blocks_shp$geometry)
 
@@ -523,6 +478,11 @@ plot(chi_blocks_shp$geometry)
 chi_tracts_shp <-  st_intersection(cook_tracts_shp, chi)%>%
   st_collection_extract("POLYGON")%>%
              select(GEOID,geometry)
+
+chi_tracts_list<-chi_tracts_shp %>% 
+  select(GEOID) %>% 
+  as.tibble()
+
 
 class(chi_tracts_shp)
 plot(chi_tracts_shp$geometry)
@@ -794,16 +754,19 @@ acs_table <- cook_tracts_tbl %>% inner_join(race_tab, by="GEOID") %>%
 #   inner_join(enr_tab)
 
 ```
+
 ## Calculate Weights 
 ```{r weights}
 
-weights <-cook_blocks_tbl %>% 
+weights_chi <- chi_blocks_list %>% 
   mutate(tract=substr(GEOID, 1, 11)) %>% 
   arrange(tract) %>% 
-  merge(cook_tracts_tbl, by.x="tract", by.y="GEOID", all.x=T) %>% 
+  merge(chi_tract, by.x="tract", by.y="GEOID", all.x=T) %>% 
+  mutate(block=substr(GEOID, 1, 16)) %>% 
   mutate(pop_wt=block_pop/tract_pop, hu_wt=block_hu/tract_hu)
 
-acs_table_wt <- inner_join(acs_table,weights, by= "tract")
+acs_table_wt <- temp %>% merge(acs_table, by.x="tract", by.y="GEOID", all.x=T) %>% 
+  mutate(latinx_app=pop_wt*latinx)
 
 ```
 ## Weight the social factors 
