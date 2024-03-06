@@ -488,14 +488,6 @@ class(chi_tracts_shp)
 plot(chi_tracts_shp$geometry)
 ```
 
-```{r map-blocks, eval = FALSE}
-
-# tmap_mode("plot")
-# tm_shape(chi_pop) +
-#   tm_polygons(col="POP20", style= "jenks", title="Population", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-```
 
 ### Library Catchment Areas
 
@@ -758,87 +750,47 @@ acs_table <- cook_tracts_tbl %>% inner_join(race_tab, by="GEOID") %>%
 ## Calculate Weights 
 ```{r weights}
 
-weights_chi <- chi_blocks_list %>% 
+weights_chi <- cook_blocks_tbl %>% 
   mutate(tract=substr(GEOID, 1, 11)) %>% 
   arrange(tract) %>% 
-  merge(chi_tract, by.x="tract", by.y="GEOID", all.x=T) %>% 
+  merge(cook_tracts_tbl, by.x="tract", by.y="GEOID", all.x=T) %>% 
   mutate(block=substr(GEOID, 1, 16)) %>% 
   mutate(pop_wt=block_pop/tract_pop, hu_wt=block_hu/tract_hu)
 
-acs_table_wt <- temp %>% merge(acs_table, by.x="tract", by.y="GEOID", all.x=T) %>% 
-  mutate(latinx_app=pop_wt*latinx)
+acs_table_wt <- weights_chi %>% merge(acs_table, by.x="tract", by.y="GEOID", all.x=T) %>% mutate(latinx_app=pop_wt*latinx)
+
 
 ```
-## Weight the social factors 
-
-## Join block table to shapefile 
-```{r join-block-tbl-shp}
-
-blocks_wt <- inner_join(chi_blocks_shp, acs_table_wt, by= c("GEOID" = "GEOID.y"))
-                        
-```
+### Weight the social factors 
 
 ## Generate centroids 
 
 ```{r gen-centroids}
 
 # Generate centroids for the blocks
-centroids <- st_centroid(blocks_wt)
+centroids <- st_centroid(chi_blocks_shp)
+
+# Join library names to centroids
+vor_blocks <- st_join(chi_vor, centroids, join= st_intersects, left=TRUE)
+
+# Join weights table to block data
+lib_service <- acs_table_wt %>% 
+  merge(vor_blocks, by.x="GEOID", by.y="GEOID.y", all.x=T)
+
+#Aggregate latinx apportionment 
+agg_latinx <- aggregate(latinx_app ~ NAME, data = lib_service, sum)
+
+catchment <- chi_vor %>% merge(agg_latinx, by="NAME")
 
 ```
 
+```{r map-catchment}
+tm_latinx <-tmap_mode("plot")
+tm_shape(catchment) +
+  tm_polygons(col="latinx_app", style="jenks", title="LatinX Pop", lwd= NA, border.col="lightgrey") +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-## spatial join to library service areas 
-```{r join-centroids}
-# Spatial join centroids to Thiessen polygons
-
-lib_service <- st_join(chi_vor, centroids, join= st_intersects, left=TRUE)
-
-# Create aggregated columns of socdem variables 
-
-agg_black <- aggregate(black ~ NAME, data = lib_service, sum)
-agg_pop <- aggregate(block_pop ~ NAME, data = lib_service, sum)
-agg_emp <- aggregate(emp1 ~ NAME, data = lib_service, sum)
-agg_for <- aggregate(for1 ~ NAME, data= lib_service, sum)
-agg_lang <- aggregate(lang2 ~ NAME, data= lib_service, sum)
-
-# Join them together into the Vor shapefile
-agg_lib <- left_join(chi_vor, agg_black, by="NAME")%>%
-  rename(sumBlack = black) 
-
-agg_lib <- left_join(agg_lib, agg_pop, by="NAME")
-agg_lib <-left_join(agg_lib, agg_emp, by= "NAME")
-agg_lib <-left_join(agg_lib, agg_for, by= "NAME")
-agg_lib <-left_join(agg_lib, agg_lang, by= "NAME")
-
-  
-class(agg_pop)
-# MAP!
-
-tmap_mode("plot")
-tm_shape(agg_lib) +
-  tm_polygons(col="sumBlack", style="jenks", title="Black Pop.", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(agg_lib) +
-  tm_polygons(col="block_pop", style="jenks", title="Block Pop.", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(agg_lib) +
-  tm_polygons(col="emp1", style="jenks", title="Employed", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(agg_lib) +
-  tm_polygons(col="for1", style="jenks", title="Foreign", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(agg_lib) +
-  tm_polygons(col="lang2", style="jenks", title="Speak Spanish", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+tm_latinx
 
 ```
 
