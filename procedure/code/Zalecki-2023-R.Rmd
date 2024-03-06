@@ -797,10 +797,35 @@ tm_latinx
 ### join website data to voronoi shapefile 
 ```{r web_vor_shp}
 
-web_vor_chi <- left_join(chi_vor, web, by="NAME")
+web_vor <- left_join(chi_vor, web, by="NAME")%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
+tm_hotspots <-tmap_mode("plot")
+tm_shape(web_vor) +
+  tm_polygons(col="NE_MATER", title="Mental Health", lwd= NA, border.col="lightgrey") +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tm_hotspots
+```
+
+
+
+
+# Results
+
+```{r outliers}
+web %>% identify_outliers(COMPSES)%>%
+  print(width=Inf)
+
+no_outliers <- web %>% filter(web$CIRC < 273406)
+```
+
+```{r histogram}
+web %>% hist(CIRC)
 
 ```
+
+
 ```{r map-web}
 
 #MAP!
@@ -853,186 +878,6 @@ tm_hspot
 #   tm_polygons(col="NE_MATER", title="Non English Language Materials", lwd= NA, palette = c("purple", "green"))+
 # tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-
-```
-
-# Results
-
-##Tract Maps 
-
-###Median Income
-
-```{r medinc-tract-map}
-
-# Median Household Income
-
-# Check out histogram
-hist(acs_tracts$B19013_001E)
-
-# Map
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="B19013_001E", style="jenks", title="Med. Household Income", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-
-```
-###Racial Majority
-```{r majrac-tract-map}
-# Majority Race
-acs_tracts <- mutate(acs_tracts, pctBlack= black/sumPOP )%>%
-              mutate(acs_tracts, pctWhite= white/sumPOP)%>%
-              mutate(acs_tracts, pctAsian= asian/sumPOP)%>%
-              mutate(acs_tracts, pctMixed= mixed/sumPOP)%>%
-              mutate(acs_tracts, pctLatinx= latinx/sumPOP)
-
-# Case function for race categories
-acs_tracts <- mutate(acs_tracts, majRace = case_when(
-             pctWhite > .55 ~ 'White',
-             pctBlack > .55 ~ 'Black',
-             pctAsian > .55 ~ 'Asian',
-             pctLatinx > .55 ~ 'LatinX',
-             TRUE ~ 'Other'))
-
-# Map 
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="majRace", title="Racial Majority", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-```
-###Nativity
-
-```{r nat-tract-map}
-# Nativity
-acs_tracts <- mutate(acs_tracts, pctFor= for1/sumPOP )%>%
-            mutate(acs_tracts, pctNat= for0/sumPOP)
-
-# Check out histogram
-hist(acs_tracts$for1)
-
-# Map 
-
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="for1", style="jenks", title="Total Foreign", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-# tmap_mode("plot")
-# tm_shape(acs_tracts) +
-#   tm_polygons(col="pctFor", style="quantile", title="Pct Foreign", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-```
-###Employment
-```{r emp-tract-maps}
-
-acs_tracts <- mutate(acs_tracts, pctEmp= emp1/sumPOP)%>%
-            mutate(acs_tracts, pctUnemp= emp0/sumPOP)
-
-hist(acs_tracts$emp1)
-
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="emp1",style="jenks", title="Total Employed", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-# tmap_mode("plot")
-# tm_shape(acs_tracts) +
-#   tm_polygons(col="pctEmp",style="quantile", title="Pct Employed", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-
-# tmap_mode("plot")
-# tm_shape(acs_tracts) +
-#   tm_polygons(col="pctUnemp", title="Pct Unemployed per Capita", lwd= 0, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-```
-
-###Educational attainment
-```{r edu-att-tract-map}
-
-#field calculate percents 
-
-acs_tracts <- mutate(acs_tracts, pctET1= et1/sumPOP )%>%
-            mutate(acs_tracts, pctET2= et2/sumPOP)%>%
-            mutate(acs_tracts, pctET3= et3/sumPOP)%>%
-            mutate(acs_tracts, pctET4= et4/sumPOP)
-
-# Totals
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="et1", style= "jenks", title="Total No High Dip", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="et2", style= "jenks", title="Total High Dip or Eq", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="et3", style= "jenks", title="Total Assoc. or Bach.", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="et4", style= "jenks", title="Total Grad or Prof", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-#Percents
-
-# tmap_mode("plot")
-# tm_shape(acs_tracts) +
-#   tm_polygons(col="pctET1", style= "quantile", title="Pct No High Dip", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-# 
-# tmap_mode("plot")
-# tm_shape(acs_tracts) +
-#   tm_polygons(col="pctET2",style= "quantile", title="Pct High Dip or Eq", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-# 
-# tmap_mode("plot")
-# tm_shape(acs_tracts) +
-#   tm_polygons(col="pctET3",style= "quantile", title="Pct Assoc. or Bach.", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-# 
-# tmap_mode("plot")
-# tm_shape(acs_tracts) +
-#   tm_polygons(col="pctET4",style= "quantile", title="Pct Grad or Prof", lwd= NA, border.col="lightgrey") +
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-
-```
-
-###Language spoken at home
-```{r lang-map}
-
-#Field calculate 
-acs_tracts <- mutate(acs_tracts, pctEng= lang1/sumPOP )%>%
-            mutate(acs_tracts, pctSpan= lang2/sumPOP)%>%
-            mutate(acs_tracts, pctOther= lang3/sumPOP)%>%
-            mutate(acs_tracts, pctWell= lang4/sumPOP)%>%
-            mutate(acs_tracts, pctNWell= lang5/sumPOP)
-
-#case
-acs_tracts <- mutate(acs_tracts, majLang = case_when(
-             pctWell > .60 ~ 'Very Well',
-             pctNWell > .60 ~ 'Not Very Well',
-             TRUE ~ 'Other'))
-
-#map
-
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="lang2", style="jenks", title="Total Spanish Speakers", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="lang3",style="jenks", title="Total Other Language", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tmap_mode("plot")
-tm_shape(acs_tracts) +
-  tm_polygons(col="lang4",style="jenks", title="Total Speak English Not Very Well", lwd= NA, border.col="lightgrey") +
-tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 ```
 
