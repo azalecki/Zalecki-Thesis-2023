@@ -794,19 +794,37 @@ tm_latinx
 
 ```
 
+
 ### join website data to voronoi shapefile 
 ```{r web_vor_shp}
 
 web_vor <- left_join(chi_vor, web, by="NAME")%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
+# make tibble 
+web_vor <- as_tibble(web_vor)
+
+# make a function for factoring true and false
+
+boolean <- function(){
+  recode(is.numeric(), "0" = "Yes",  "1" = "No")
+}
+
+web.new <- mutate_at(web, vars(HSPOT, CHBOOK, UMEDIA, MHSS, CITCORNER), boolean)
+             
+             
+```
+
+```{r mapping-web}
 tm_hotspots <-tmap_mode("plot")
-tm_shape(web_vor) +
-  tm_polygons(col="NE_MATER", title="Mental Health", lwd= NA, border.col="lightgrey") +
+tm_shape(web.new) +
+  tm_polygons(col="MHSS", title="Mental Health", lwd= NA, border.col="lightgrey") +
   tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 tm_hotspots
 ```
+
+
 
 
 
@@ -843,7 +861,7 @@ tm_vist <- tm_shape(web_vor_chi) +
 tm_vist 
 
 tm_compses <- tm_shape(web_vor_chi) +
-              tm_polygons(col="COMPSES", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
+              tm_polygons(col="COMPSES", style="jenks", title="Computer Sessions", lwd= NA, border.col="lightgrey") +
               tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 tm_compses
 
