@@ -699,8 +699,13 @@ enr_acs$se3 <- c(enr_acs$B14001_010E)
 
 # filter acs data by the columns that you want to keep in the new aggregate table
 
+<<<<<<< HEAD
 # as_tab <- as_acs %>% 
 #   dplyr::select(GEOID, child, teen, yad, mad, sen, t_male,t_fem)
+=======
+as_tab <- as_acs %>% 
+  dplyr::select(GEOID, child, teen, yad, mad, sen, t_male,t_fem)
+>>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
 
 hhi_tab <- inc_acs %>%
   dplyr::select(GEOID, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
@@ -736,6 +741,7 @@ acs_table <- cook_tracts_tbl %>% inner_join(race_tab, by="GEOID") %>%
                                  inner_join(nat_tab, by="GEOID")%>% 
                                  inner_join(edu_tab, by="GEOID")%>%
                                  inner_join(lang_tab,by="GEOID")%>%
+                                 inner_join(as_tab, by="GEOID")%>%
   mutate(tract=substr(GEOID, 1, 11)) %>%  arrange(tract)
 
 
@@ -751,19 +757,33 @@ weights_chi <- cook_blocks_tbl %>%
   mutate(block=substr(GEOID, 1, 16)) %>% 
   mutate(pop_wt=block_pop/tract_pop, hu_wt=block_hu/tract_hu)
 
+<<<<<<< HEAD
 
 ```
 ```{r weights-mutate}
 
+=======
+```
+
+```{r weights-mutate}
+>>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
 acs_table_wt <- weights_chi %>% merge(acs_table, by.x="tract", by.y="GEOID", all.x=T) %>% mutate(latinx_app=pop_wt*latinx)%>%
 mutate(for_app=pop_wt*for1)%>%
 mutate(bach_app=pop_wt*et3)%>%
 mutate(unemp_app=pop_wt*emp0)%>%
+<<<<<<< HEAD
+=======
+mutate(fem_app=pop_wt*t_fem)%>%
+>>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
 mutate(white_app=pop_wt*white)
 
 
 ```
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
 ### Weight the social factors 
 
 ## Generate centroids 
