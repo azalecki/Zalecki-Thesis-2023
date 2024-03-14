@@ -699,6 +699,9 @@ enr_acs$se3 <- c(enr_acs$B14001_010E)
 
 # filter acs data by the columns that you want to keep in the new aggregate table
 
+# as_tab <- as_acs %>% 
+#   dplyr::select(GEOID, child, teen, yad, mad, sen, t_male,t_fem)
+
 hhi_tab <- inc_acs %>%
   dplyr::select(GEOID, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
 
@@ -735,15 +738,6 @@ acs_table <- cook_tracts_tbl %>% inner_join(race_tab, by="GEOID") %>%
                                  inner_join(lang_tab,by="GEOID")%>%
   mutate(tract=substr(GEOID, 1, 11)) %>%  arrange(tract)
 
-# acs_table <- cook_tracts_tbl %>%
-#   inner_join(emp_tab)%>%
-#   inner_join(nat_tab)%>%
-#   inner_join(edu_tab)%>%
-#   inner_join(race_tab)%>%
-#   inner_join(m_inc_tab)%>%
-#   inner_join(as_tab)%>%
-#   inner_join(lang_tab)%>%
-#   inner_join(enr_tab)
 
 ```
 
@@ -757,10 +751,19 @@ weights_chi <- cook_blocks_tbl %>%
   mutate(block=substr(GEOID, 1, 16)) %>% 
   mutate(pop_wt=block_pop/tract_pop, hu_wt=block_hu/tract_hu)
 
-acs_table_wt <- weights_chi %>% merge(acs_table, by.x="tract", by.y="GEOID", all.x=T) %>% mutate(latinx_app=pop_wt*latinx)
+
+```
+```{r weights-mutate}
+
+acs_table_wt <- weights_chi %>% merge(acs_table, by.x="tract", by.y="GEOID", all.x=T) %>% mutate(latinx_app=pop_wt*latinx)%>%
+mutate(for_app=pop_wt*for1)%>%
+mutate(bach_app=pop_wt*et3)%>%
+mutate(unemp_app=pop_wt*emp0)%>%
+mutate(white_app=pop_wt*white)
 
 
 ```
+
 ### Weight the social factors 
 
 ## Generate centroids 
@@ -777,20 +780,29 @@ vor_blocks <- st_join(chi_vor, centroids, join= st_intersects, left=TRUE)
 lib_service <- acs_table_wt %>% 
   merge(vor_blocks, by.x="GEOID", by.y="GEOID.y", all.x=T)
 
-#Aggregate latinx apportionment 
+#Aggregate variable apportionments
 agg_latinx <- aggregate(latinx_app ~ NAME, data = lib_service, sum)
+agg_unemp <- aggregate(unemp_app ~ NAME, data= lib_service, sum)
+agg_college <- aggregate(bach_app ~ NAME, data= lib_service, sum)
+agg_foreign <- aggregate(for_app ~ NAME, data=lib_service, sum)
+agg_white<- aggregate(white_app ~ NAME, data=lib_service, sum)
 
-catchment <- chi_vor %>% merge(agg_latinx, by="NAME")
+#join back to catchment layer
+catchment <- chi_vor %>% merge(agg_latinx, by="NAME")%>% 
+  merge(agg_unemp, by="NAME") %>% 
+  merge(agg_college, by="NAME")%>% 
+  merge(agg_foreign, by="NAME")%>% 
+  merge(agg_white, by="NAME")
 
 ```
 
 ```{r map-catchment}
-tm_latinx <-tmap_mode("plot")
+tm_predictor <-tmap_mode("plot")
 tm_shape(catchment) +
-  tm_polygons(col="latinx_app", style="jenks", title="LatinX Pop", lwd= NA, border.col="lightgrey") +
+  tm_polygons(col="white_app", style="jenks", title="LatinX Pop", lwd= NA, border.col="lightgrey") +
   tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-tm_latinx
+tm_predictor
 
 ```
 
@@ -802,30 +814,28 @@ web_vor <- left_join(chi_vor, web, by="NAME")%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
 # make tibble 
-web_vor <- as_tibble(web_vor)
 
-# make a function for factoring true and false
-
-boolean <- function(){
-  recode(is.numeric(), "0" = "Yes",  "1" = "No")
-}
-
-web.new <- mutate_at(web, vars(HSPOT, CHBOOK, UMEDIA, MHSS, CITCORNER), boolean)
-             
+web.new <- web_vor %>%
+  mutate(HHELP=factor(HHELP, levels=c(0,1), labels=c( "No", "Yes"))) %>%
+  mutate(CHBOOK=factor(CHBOOK, levels=c(0,1), labels=c( "No", "Yes"))) %>%
+  mutate(UMEDIA=factor(UMEDIA, levels=c(0,1), labels=c( "No", "Yes"))) %>%
+  mutate(MHSS=factor(MHSS, levels=c(0,1), labels=c( "No", "Yes"))) %>%
+  mutate(CITCORNER=factor(CITCORNER, levels=c(0,1), labels=c( "No", "Yes")))%>%
+  mutate(HSPOT=factor(HSPOT, levels=c(0,1), labels=c( "No", "Yes")))%>%
+  mutate(CYBNAV=factor(CYBNAV, levels=c(0,1), labels=c( "No", "Yes")))%>%
+  mutate(NE_MATER=factor(NE_MATER, levels=c(0,1), labels=c( "No", "Yes")))%>%
+  mutate(IP_HHELP=factor(IP_HHELP, levels=c(0,1), labels=c( "No", "Yes")))
              
 ```
 
 ```{r mapping-web}
-tm_hotspots <-tmap_mode("plot")
+tm_outcome <-tmap_mode("plot")
 tm_shape(web.new) +
-  tm_polygons(col="MHSS", title="Mental Health", lwd= NA, border.col="lightgrey") +
+  tm_polygons("MHSS",palette = c("No" = "#ffd14d", "Yes" = "#df5454"), title="Mental Health", lwd= NA, border.col="lightgrey") +
   tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
-tm_hotspots
+tm_outcome
 ```
-
-
-
 
 
 
@@ -840,6 +850,43 @@ no_outliers <- web %>% filter(web$CIRC < 273406)
 
 ```{r histogram}
 web %>% hist(CIRC)
+
+```
+```{r desc_stats_pred}
+#foreign born 
+
+hist(catchment$for_app, breaks=50)
+
+median(catchment$for_app) 
+sd(catchment$for_app)
+min(catchment$for_app)
+max(catchment$for_app)
+
+#unemployed
+
+hist(catchment$unemp_app, breaks=50)
+mean(catchment$unemp_app)
+median(catchment$unemp_app)
+sd(catchment$unemp_app)
+min(catchment$unemp_app)
+max(catchment$unemp_app)
+
+#latinx
+
+hist(catchment$latinx_app, breaks=50)
+median(catchment$latinx_app)
+mean(catchment$latinx_app)
+sd(catchment$latinx_app)
+min(catchment$latinx_app)
+max(catchment$latinx_app)
+
+#bachelors
+hist(catchment$bach_app, breaks=50)
+median(catchment$bach_app)
+mean(catchment$bach_app)
+sd(catchment$bach_app)
+min(catchment$bach_app) 
+max(catchment$bach_app)
 
 ```
 
