@@ -43,7 +43,7 @@ This research aims to answer the following two questions. How do library service
 packages <- c( 
   "tidycensus", "tidyverse", "sf", "classInt", "readr", "tigris",
   "rgdal","rstudioapi", "here", "s2", "pastecs", "tmap", "knitr", 
-  "kableExtra", "broom", "leaflet", "usethis", "deldir", "spatstat", "webshot"
+  "kableExtra", "broom", "usethis", "deldir", "spatstat", "webshot", "rstatix"
 )
 
 # force all conflicts to become errors
@@ -106,7 +106,7 @@ Each of the next subsections describes one data source.
 Primary data sources are to include the following. 
 
 ```{r load-website-data}
-# Load website survey data from the Github
+# Load website survey data from the Github data folder 
 
 web = read_csv("https://raw.githubusercontent.com/azalecki/Zalecki-2023/main/data/raw/public/WS_1_29_24.csv")
 ```
@@ -116,17 +116,16 @@ Secondary data sources for the study are to include the following.
 ### Chicago Shapefile 
 
 ```{r download-places, eval= FALSE}
-# Load in all places defined by the US Census 
+
+# Load in all places defined by the US Census
 il_places <- places(state = "IL")
 
-il_places
-
+# Save data 
 saveRDS(il_places, here("data", "raw", "public", "il_places.RDS"))
 
 ```
 
 ```{r load-clip-places}
-
 # Load Census places for Illinois
 il_places <- readRDS(here("data", "raw", "public", "il_places.RDS"))
 
@@ -170,6 +169,7 @@ cook_blocks_tbl <- readRDS(here("data", "raw", "public", "cook_blocks_tbl.RDS"))
 cook_blocks_shp <- readRDS(here("data", "raw", "public", "cook_blocks_shp.RDS"))
                   
 ```
+
 # Download tract data from the 2021 American Community Survey(ACS) 
 ```{r download-tract-table}
 cook_tracts_tbl <-get_decennial(geography="tract", state="IL", county="Cook", year=2020,
@@ -193,6 +193,7 @@ cook_tracts_shp <- tracts(
 saveRDS(cook_tracts_shp, here("data", "raw", "public", "cook_tracts_shp.RDS"))
 
 ```
+
 ```{r load-tracts}
 
 #Load tract data 
@@ -585,8 +586,7 @@ as_acs$sen <- c(as_acs$B01001_017E +
                 as_acs$B01001_048E +
                 as_acs$B01001_049E)
 
-as_acs$t_male <- c(as_acs$B01001_002E)
-as_acs$t_fem <- c(as_acs$B01001_026E)
+
 
 # Rename Race columns to make the names more intuitive 
 
@@ -671,9 +671,9 @@ inc_acs$hhi7 <- c(inc_acs$B19001_017E)
  
 
 #Language spoken at home
-lang_acs$lang1 <- lang_acs$B06007_002E
-lang_acs$lang2 <- lang_acs$B06007_003E
-lang_acs$lang3 <- lang_acs$B06007_006E
+ 
+lang_acs$eng <- lang_acs$B06007_002E
+lang_acs$noneng <- c(lang_acs$B06007_003E+lang_acs$B06007_006E)
 
 lang_acs$lang4 <- c(lang_acs$B06007_004E + 
                   lang_acs$B06007_007E)
@@ -699,13 +699,11 @@ enr_acs$se3 <- c(enr_acs$B14001_010E)
 
 # filter acs data by the columns that you want to keep in the new aggregate table
 
-<<<<<<< HEAD
-# as_tab <- as_acs %>% 
-#   dplyr::select(GEOID, child, teen, yad, mad, sen, t_male,t_fem)
-=======
 as_tab <- as_acs %>% 
-  dplyr::select(GEOID, child, teen, yad, mad, sen, t_male,t_fem)
->>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
+  dplyr::select(GEOID,child, teen, yad, mad, sen, B01001_002E, B01001_026E)
+
+as_tab$t_male <- c(as_tab$B01001_002E)
+as_tab$t_fem <- c(as_tab$B01001_026E)
 
 hhi_tab <- inc_acs %>%
   dplyr::select(GEOID, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
@@ -729,19 +727,20 @@ as_tab <- as_acs %>%
   dplyr::select(GEOID, child, teen, yad, mad, sen)
 
 lang_tab <-lang_acs %>%
-  dplyr::select(GEOID, lang1, lang2, lang3, lang4, lang5)
+  dplyr::select(GEOID, eng, noneng)
 
 enr_tab <- enr_acs %>%
   dplyr::select(GEOID, se1, se2, se3)
 
 # Join the ACS data to the tract table 
 
-acs_table <- cook_tracts_tbl %>% inner_join(race_tab, by="GEOID") %>%
+acs_table <- cook_tracts_tbl %>% inner_join(as_tab, by="GEOID")%>%
+                                 inner_join(race_tab, by="GEOID") %>%
                                  inner_join(emp_tab, by="GEOID") %>% 
                                  inner_join(nat_tab, by="GEOID")%>% 
                                  inner_join(edu_tab, by="GEOID")%>%
                                  inner_join(lang_tab,by="GEOID")%>%
-                                 inner_join(as_tab, by="GEOID")%>%
+
   mutate(tract=substr(GEOID, 1, 11)) %>%  arrange(tract)
 
 
@@ -757,36 +756,22 @@ weights_chi <- cook_blocks_tbl %>%
   mutate(block=substr(GEOID, 1, 16)) %>% 
   mutate(pop_wt=block_pop/tract_pop, hu_wt=block_hu/tract_hu)
 
-<<<<<<< HEAD
-
-```
-```{r weights-mutate}
-
-=======
 ```
 
 ```{r weights-mutate}
->>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
+
 acs_table_wt <- weights_chi %>% merge(acs_table, by.x="tract", by.y="GEOID", all.x=T) %>% mutate(latinx_app=pop_wt*latinx)%>%
 mutate(for_app=pop_wt*for1)%>%
 mutate(bach_app=pop_wt*et3)%>%
 mutate(unemp_app=pop_wt*emp0)%>%
-<<<<<<< HEAD
-=======
 mutate(fem_app=pop_wt*t_fem)%>%
->>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
-mutate(white_app=pop_wt*white)
-
+mutate(white_app=pop_wt*white)%>%
+mutate(fem_app=pop_wt*t_fem)%>%
+mutate(lang_app=pop_wt*noneng)
 
 ```
 
-<<<<<<< HEAD
-=======
-
->>>>>>> eb6a8a12de0e6e19bc6de4a68d02e6ea1a8367d8
 ### Weight the social factors 
-
-## Generate centroids 
 
 ```{r gen-centroids}
 
@@ -796,7 +781,7 @@ centroids <- st_centroid(chi_blocks_shp)
 # Join library names to centroids
 vor_blocks <- st_join(chi_vor, centroids, join= st_intersects, left=TRUE)
 
-# Join weights table to block data
+# Join weights table to library service data
 lib_service <- acs_table_wt %>% 
   merge(vor_blocks, by.x="GEOID", by.y="GEOID.y", all.x=T)
 
@@ -806,20 +791,26 @@ agg_unemp <- aggregate(unemp_app ~ NAME, data= lib_service, sum)
 agg_college <- aggregate(bach_app ~ NAME, data= lib_service, sum)
 agg_foreign <- aggregate(for_app ~ NAME, data=lib_service, sum)
 agg_white<- aggregate(white_app ~ NAME, data=lib_service, sum)
+agg_fem <- aggregate(fem_app ~ NAME, data= lib_service, sum)
+agg_noneng <- aggregate(lang_app ~ NAME, data= lib_service, sum)
+agg_pop <- aggregate(block_pop ~ NAME, data= lib_service, sum)
 
 #join back to catchment layer
 catchment <- chi_vor %>% merge(agg_latinx, by="NAME")%>% 
   merge(agg_unemp, by="NAME") %>% 
   merge(agg_college, by="NAME")%>% 
   merge(agg_foreign, by="NAME")%>% 
-  merge(agg_white, by="NAME")
+  merge(agg_white, by="NAME")%>%
+  merge(agg_fem, by="NAME")%>% 
+  merge(agg_noneng, by= "NAME")%>%
+  merge(agg_pop, by= "NAME")
 
 ```
 
 ```{r map-catchment}
 tm_predictor <-tmap_mode("plot")
 tm_shape(catchment) +
-  tm_polygons(col="white_app", style="jenks", title="LatinX Pop", lwd= NA, border.col="lightgrey") +
+  tm_polygons(col="for_app", style="jenks", title="Foreign Born Pop", lwd= NA, border.col="lightgrey") +
   tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
 tm_predictor
@@ -844,36 +835,51 @@ web.new <- web_vor %>%
   mutate(HSPOT=factor(HSPOT, levels=c(0,1), labels=c( "No", "Yes")))%>%
   mutate(CYBNAV=factor(CYBNAV, levels=c(0,1), labels=c( "No", "Yes")))%>%
   mutate(NE_MATER=factor(NE_MATER, levels=c(0,1), labels=c( "No", "Yes")))%>%
-  mutate(IP_HHELP=factor(IP_HHELP, levels=c(0,1), labels=c( "No", "Yes")))
+  mutate(IP_HHELP=factor(IP_HHELP, levels=c(0,1), labels=c( "No", "Yes")))%>%
+  mutate(STROOMS=factor(STROOMS, levels=c(0,1), labels=c( "No", "Yes")))%>%
+  mutate(COMP=factor(COMP, levels=c(0,1), labels=c( "No", "Yes")))
              
 ```
 
-```{r mapping-web}
-tm_outcome <-tmap_mode("plot")
-tm_shape(web.new) +
-  tm_polygons("MHSS",palette = c("No" = "#ffd14d", "Yes" = "#df5454"), title="Mental Health", lwd= NA, border.col="lightgrey") +
-  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+```{r join-pred-out-vars}
 
-tm_outcome
+# Join tables with predictor and outcome variables together for the statistical analysis
+
+grand_tbl <- inner_join(catchment, web, by="NAME") %>% 
+  dplyr::select(NAME, latinx_app, unemp_app, bach_app, for_app, white_app, fem_app, lang_app, block_pop, CIRC, VIST, HSPOT, CHBOOK, HHELP, IP_HHELP, CITCORNER, CYBNAV, UMEDIA)%>% 
+  st_drop_geometry()
+
+
 ```
-
 
 
 # Results
 
 ```{r outliers}
-web %>% identify_outliers(COMPSES)%>%
+web %>% identify_outliers(CIRC)%>%
   print(width=Inf)
 
 no_outliers <- web %>% filter(web$CIRC < 273406)
 ```
 
-```{r histogram}
-web %>% hist(CIRC)
+```{r mapping-web}
+tm_outcome <-tmap_mode("plot")
+tm_shape(web.new) +
+  tm_polygons("STROOMS",palette = c("No" = "#F2D472", "Yes" = "#8C9AF5"), title="Study Rooms", lwd= NA, border.col="lightgrey") +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
 
+tm_outcome
+
+tm_outcome2 <- tmap_mode("plot")
+tm_shape(web.new) +
+  tm_polygons(col="VIST", palette = brewer.pal(n = 5, name = "YlGn"), style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+
+tm_outcome2
 ```
+
 ```{r desc_stats_pred}
-#foreign born 
+# foreign born 
 
 hist(catchment$for_app, breaks=50)
 
@@ -882,7 +888,7 @@ sd(catchment$for_app)
 min(catchment$for_app)
 max(catchment$for_app)
 
-#unemployed
+# unemployed
 
 hist(catchment$unemp_app, breaks=50)
 mean(catchment$unemp_app)
@@ -891,7 +897,7 @@ sd(catchment$unemp_app)
 min(catchment$unemp_app)
 max(catchment$unemp_app)
 
-#latinx
+# latinx
 
 hist(catchment$latinx_app, breaks=50)
 median(catchment$latinx_app)
@@ -900,7 +906,7 @@ sd(catchment$latinx_app)
 min(catchment$latinx_app)
 max(catchment$latinx_app)
 
-#bachelors
+# has a college degree
 hist(catchment$bach_app, breaks=50)
 median(catchment$bach_app)
 mean(catchment$bach_app)
@@ -908,111 +914,45 @@ sd(catchment$bach_app)
 min(catchment$bach_app) 
 max(catchment$bach_app)
 
-```
+# female 
 
+hist(catchment$fem_app, breaks=50)
+median(catchment$fem_app)
+mean(catchment$fem_app)
+sd(catchment$fem_app)
+min(catchment$fem_app)
+max(catchment$fem_app)
 
-```{r map-web}
+# language spoken at home is a language other than english 
+hist(catchment$lang_app, breaks=50)
+median(catchment$lang_app)
+mean(catchment$lang_app)
+min(catchment$lang_app)
+max(catchment$lang_app)
 
-#MAP!
-tm_circ<- tmap_mode("plot")
-          tm_shape(web_vor_chi) +
-          tm_polygons(col="CIRC", style="jenks", title="Circulation", lwd= NA, border.col="lightgrey") +
-          tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
+# population 
 
-tm_circ
-
-tm_vist <- tm_shape(web_vor_chi) +
-           tm_polygons(col="VIST", style="jenks", title="Visitation", lwd= NA, border.col="lightgrey") +
-           tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tm_vist 
-
-tm_compses <- tm_shape(web_vor_chi) +
-              tm_polygons(col="COMPSES", style="jenks", title="Computer Sessions", lwd= NA, border.col="lightgrey") +
-              tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-tm_compses
-
-tm_til <-tm_shape(web_vor_chi) +
-        tm_polygons(col="IP_HHELP", title="In Person Homework Help", lwd= NA, palette = c("purple", "green"))+
-        tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-tm_til
-
-tm_hspot <- tm_shape(web_vor_chi) +
-            tm_polygons(col="HSPOT", title="HotSpot Lending", lwd= NA, palette = c("purple", "green"))+
-            tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-tm_hspot
-# tm_shape(web_vor_chi) +
-#   tm_polygons(col="UMEDIA", title="YouMedia", lwd= NA, palette = c("purple", "green"))+
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-# 
-# tm_shape(web_vor_chi) +
-#   tm_polygons(col="CHBOOK", title="Chromebook Lending", lwd= NA, palette = c("purple", "green"))+
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-# 
-# tm_shape(web_vor_chi) +
-#   tm_polygons(col="MHSS", title="Mental Health and Social Services", lwd= NA, palette = c("purple", "green"))+
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-# 
-# tm_shape(web_vor_chi) +
-#   tm_polygons(col="CITCORNER", title="Citizen Corner", lwd= NA, palette = c("purple", "green"))+
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-# 
-# 
-# tm_shape(web_vor_chi) +
-#   tm_polygons(col="NE_MATER", title="Non English Language Materials", lwd= NA, palette = c("purple", "green"))+
-# tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
+hist(catchment$block_pop, breaks=50)
+median(catchment$block_pop)
+mean(catchment$block_pop)
+sd(catchment$block_pop)
+min(catchment$block_pop)
+max(catchment$block_pop)
 
 ```
 
-##Descriptive Statistics for Web Survey
+```{r logistic-reg}
+log_tbl <- inner_join(catchment, web, by="NAME") %>% 
+  dplyr::select(latinx_app, unemp_app, bach_app, for_app, white_app, fem_app, lang_app, block_pop, CIRC, VIST, HSPOT, CHBOOK, HHELP, IP_HHELP, CITCORNER, CYBNAV, UMEDIA)%>% 
+  st_drop_geometry()
 
-```{r m-sd-table-2}
-# Table of means and standard deviation for explanatory variables
+logistic <- glm(UMEDIA ~., data= log_tbl, family="binomial")
 
-means <- web %>% summarise(
-                  m_circ = mean(CIRC),
-                  m_vist = mean(VIST), 
-                  m_hspot = mean(HSPOT),
-                  m_citcorn = mean(CITCORNER),
-                  m_cybnav = mean(CYBNAV),
-                  m_strooms = mean(STROOMS),
-                  m_umedia = mean(UMEDIA),
-                  m_neng = mean(NE_MATER),
-                  m_comp = mean(COMP),
-                  m_compses = mean(COMPSES),
-                  m_mhss = mean(MHSS))%>%
-                  tibble()%>%
-                  t()
+summary(logistic)
 
-sds <- web %>% summarise(
-                  sd_circ = sd(CIRC),
-                  sd_vist = sd(VIST), 
-                  sd_hspot = sd(HSPOT),
-                  sd_citcorn = sd(CITCORNER),
-                  sd_cybnav = sd(CYBNAV),
-                  sd_strooms = sd(STROOMS),
-                  sd_umedia = sd(UMEDIA),
-                  sd_neng = sd(NE_MATER),
-                  sd_comp = sd(COMP),
-                  sd_compses = sd(COMPSES),
-                  sd_mhss = sd(MHSS))%>%
-                  tibble()%>%
-                  t()
-print(means)
-print(sds)
-
-```
-
-```{r ws-histograms}
-
- hist(web$CIRC)
- hist(web$VIST)
- hist(web$COMPSES)
-```
-
-```{r exclude-outliers}
+ggplot(grand_tbl, aes(x = bach_app, y = CIRC)) +
+  geom_point(size = 2) +
+  geom_text(aes(label = NAME), vjust = -1, size= 2)
 
 ```
 
