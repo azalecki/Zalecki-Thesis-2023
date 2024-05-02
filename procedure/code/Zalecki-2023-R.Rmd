@@ -28,9 +28,7 @@ Rising inequality and increased privatization of space in urban landscapes is br
 
 # Study design
 
-This study is a reproduction of my own **an original study**. As part of my independent research work with Professor Peter Nelson, I created a workflow in QGIS to answer the question: How do library service catchment areas differ along lines of race, class, gender, etc? In order to streamline this research and make it reproducible/replicable I decided to reproduce the workflow in R and create a research compendium for it as part of my final independent project in GEOG0361: Open GIScience.
-
-This research aims to answer the following two questions. How do library service catchment areas differ along lines of race, class, gender, etc. How do the public services in these catchment areas reflect the nature of their local constituents? 
+This is **an original study** as part of my senior thesis work.The goal of this research is to not only map the geographic distribution of libraries in Chicago, IL but to investigate the ways in which library services vary across space and if they relate to the socioeconomic & demographic characteristics of the neighborhoods that they serve.This study specifically aims to answer the following questions: (1)How do library service catchment areas differ along socio-economic and demographic lines in Chicago?(2)To what extent do the socio-economic and demographic characteristics shape the services, programming and amenities available at these libraries? 
 
 # Materials and procedure
 
@@ -116,11 +114,12 @@ Secondary data sources for the study are to include the following.
 ### Chicago Shapefile 
 
 ```{r download-places, eval= FALSE}
+# Run this chunk the first time you run the code. Once the data is saved all you have to do is refer to the {r load-clip-places} chunk and run that code to reintroduce the data into the environment. 
 
-# Load in all places defined by the US Census
+# Download all places defined by the US Census
 il_places <- places(state = "IL")
 
-# Save data 
+# Save data to repository 
 saveRDS(il_places, here("data", "raw", "public", "il_places.RDS"))
 
 ```
@@ -136,15 +135,23 @@ il_places <- readRDS(here("data", "raw", "public", "il_places.RDS"))
 Because, the ACS data tables do not come with population data I have to bring in population data separately. Population data for this study is referenced at the block level for the whole of Cook County, IL. The year that the data is derived from is 2020.
 
 ```{r blocks-table}
+# Run this chunk the first time you run the code. Once the data is saved all you have to do is refer to the {r load-blocks} chunk and run that code to reintroduce the data into the environment. 
+
+# Download all blocks located in Cook County, IL defined by the US Census. This dataframe will not have any spatial geometry and will just exist in table form as a reference. 
+
 cook_blocks_tbl <-get_decennial(geography="block", state="IL", county="Cook", year=2020,
                          variables=c(block_pop="P1_001N", block_hu="H1_001N")) %>% 
   pivot_wider(id_cols = "GEOID", names_from = variable, values_from = value)
 
+# Save data to repository 
 saveRDS(cook_blocks_tbl, here("data", "raw", "public", "cook_blocks_tbl.RDS"))
 
 ```
   
 ```{r blocks-shape, eval= FALSE}
+# Run this chunk the first time you run the code. Once the data is saved all you have to do is refer to the {r load-blocks} chunk and run that code to reintroduce the data into the environment. 
+
+# Download all blocks located in Cook County, IL defined by the US Census. This dataframe **will** have any spatial geometry. We will be manipulating this data. 
 
 cook_blocks_shp <- get_decennial(
   geography = "block",
@@ -158,13 +165,16 @@ cook_blocks_shp <- get_decennial(
   keep_geo_vars = TRUE) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
+# Save data to repository 
+
 saveRDS(cook_blocks_shp, here("data", "raw", "public", "cook_blocks_shp.RDS"))
 
 ```
 
 ```{r load-blocks}
 
-#Load block data 
+#Load block datainto the environment 
+
 cook_blocks_tbl <- readRDS(here("data", "raw", "public", "cook_blocks_tbl.RDS"))
 cook_blocks_shp <- readRDS(here("data", "raw", "public", "cook_blocks_shp.RDS"))
                   
@@ -172,15 +182,24 @@ cook_blocks_shp <- readRDS(here("data", "raw", "public", "cook_blocks_shp.RDS"))
 
 # Download tract data from the 2021 American Community Survey(ACS) 
 ```{r download-tract-table}
+# Run this chunk the first time you run the code. Once the data is saved all you have to do is refer to the {r load-blocks} chunk and run that code to reintroduce the data into the environment. 
+
+# Download all tracts located in Cook County, IL defined by the US Census. This dataframe will not have any spatial geometry and will just exist in table form as a reference. 
+
 cook_tracts_tbl <-get_decennial(geography="tract", state="IL", county="Cook", year=2020,
                          variables=c(tract_pop="P1_001N", tract_hu="H1_001N")) %>% 
   pivot_wider(id_cols = "GEOID", names_from = variable, values_from = value) %>% 
   arrange(GEOID)
 
+# Save data to the repository 
+
 saveRDS(cook_tracts_tbl, here("data", "raw", "public", "cook_tracts_tbl.RDS"))
 ```
 
 ```{r download-tracts-shp, eval= FALSE}
+# Run this chunk the first time you run the code. Once the data is saved all you have to do is refer to the {r load-blocks} chunk and run that code to reintroduce the data into the environment. 
+
+# Download all tracts located in Cook County, IL defined by the US Census. This dataframe **will** have spatial geometry and will be manipulated later.  
 
 cook_tracts_shp <- tracts(
                 state = "IL",
@@ -190,23 +209,36 @@ cook_tracts_shp <- tracts(
                 year = 2020)%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
+# Save data to the repository
+
 saveRDS(cook_tracts_shp, here("data", "raw", "public", "cook_tracts_shp.RDS"))
 
 ```
 
 ```{r load-tracts}
 
-#Load tract data 
+# Load tract data into the environment 
+
 cook_tracts_tbl <- readRDS(here("data", "raw", "public", "cook_tracts_tbl.RDS"))
 cook_tracts_shp <- readRDS(here("data", "raw", "public", "cook_tracts_shp.RDS"))
                   
 ```
 ### Download social-demographic data from the 2021 American Community Survey(ACS) 
 
-I will add a more comprehensive list of variables as my senior research project progresses.
+Sociodemographic variables included in this study: 
+Median family income,
+Employment status,
+Poverty Status,
+Total population, 
+Race, 
+Ethnicity,
+Age, 
+sex, 
+Nativity,
+Educational attainment.
 
 ```{r api-key, install = TRUE}
-# Load in Census API Key. To get your own key visit this website: 
+# Load in Census API Key. Get your own API key here: https://www.census.gov/data/developers.html 
 
 census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 ```
@@ -214,6 +246,10 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
 ```{r query-acs-data, eval = FALSE}
 
 # Query Social & Demographic data tables with Census tract boundaries
+# All of the following code is pulling ACS data for the year 2021 at the census tract level for Cook County, IL. 
+
+# Run this chunk the first time you run the code. Once the data is saved all you have to do is refer to the {r load-query-acs-data} chunk and run that code to reintroduce the data into the environment. 
+
 
  # Age and Sex Table 
 
@@ -332,7 +368,7 @@ census_api_key("058bab25964a0d33dc97ba789df8df55ba443855")
      table = "B06007",
      county = "Cook",
      state = "IL",
-     year = 2016,
+     year = 2021,
      output = "wide",
      cache_table = TRUE,
      geometry = TRUE,
@@ -392,7 +428,7 @@ m_inc_acs <- get_acs(
    keep_geo_vars = TRUE) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-# Save query results
+# Save query results to the repository 
 
 saveRDS(edu_acs, here("data", "raw", "public", "edu_acs.RDS"))
 saveRDS(as_acs, here("data", "raw", "public", "as_acs.RDS"))
@@ -411,9 +447,9 @@ saveRDS(m_inc_acs, here("data", "raw", "public", "m_inc_acs.RDS"))
 
 ```
 
-```{r load-queried-acs-data}
+```{r load-query-acs-data}
 
-#Load ACS Data 
+#Load ACS Data into the environment
 
 edu_acs <- readRDS(here("data", "raw", "public", "edu_acs.RDS"))
 as_acs <- readRDS(here("data", "raw", "public", "as_acs.RDS"))
@@ -433,7 +469,7 @@ pov_acs <- readRDS(here("data", "raw", "public", "pov_acs.RDS"))
 
 ### Public Library Locations
 
-Data for Chicago Public Library locations comes in CSV format with coordinate data. Prior to uploading the CSV file into the Github site I used Microsoft Excel to manually separate the Longitude and Latitude values into two separate columns. No other data manipulation was done in Excel. 
+The Chicago Data Portal maintains a data set of all Chicago Public Library Locations, contact information and usual hours of operation.Prior to uploading the CSV file into the Github site I used Microsoft Excel to manually separate the Longitude and Latitude values into two separate columns.The locations of the 81 libraries were plotted as points in GIS using their latitude and longitude coordinates from this data set. 
 
 ```{r cpl-data, warning = FALSE}
 
@@ -447,7 +483,6 @@ points <- cpl_data %>%
   st_as_sf(coords = c("Longitude", "Latitude")) %>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-
 ```
 
 ## Bias and threats to validity
@@ -460,13 +495,13 @@ Visualizing catchment areas for libraries is my first objective because, unlike 
 
 ```{r clip-places}
 
-# Filter out Chicago from Census Places
+# Filter out the city of Chicago boundary from the Census Places data 
 
 chi <- il_places %>%
   dplyr::filter(NAME == 'Chicago')%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
-# Plot geometry
+# Plot geometry to verify 
 
 plot(chi$geometry)
 ```
@@ -478,38 +513,43 @@ Because I will be doing a population weighted aggregation I have to prepare the 
 
 ```{r filter-blocks, warning = FALSE}
 
-# Clip blocks shape by Chicago Boundary and simplify table by selecting for columns that I will need 
+# This part of the workflow is just cleaning up and simplifying the census blocks raw data before moving forward
+
+# Clip blocks data with spatial geometry by Chicago Boundary 
 
 chi_blocks_shp <- st_intersection(cook_blocks_shp, chi)%>%
   st_collection_extract("POLYGON")%>%
+
+# Simplify table by selecting for columns that I know I will need 
              select(GEOID,geometry)
 
+# Make a reference table to come back to if needed 
 chi_blocks_list<-chi_blocks_shp %>% 
   select(GEOID) %>% 
   as.tibble()
 
+```
+```{r filter-tracts}
+# This part of the workflow is just cleaning up and simplifying the census tract raw data before moving forward
 
-class(chi_blocks_shp)
-plot(chi_blocks_shp$geometry)
-
-# Clip tracts shape by Chicago Boundary and simplify table by selecting for columns that I will need 
+# Clip tract data with spatial geometry by Chicago Boundary
 chi_tracts_shp <-  st_intersection(cook_tracts_shp, chi)%>%
   st_collection_extract("POLYGON")%>%
+
+  # Simplify table by selecting for columns that I know I will need 
              select(GEOID,geometry)
 
+# Make a reference table to come back to if needed 
 chi_tracts_list<-chi_tracts_shp %>% 
   select(GEOID) %>% 
   as.tibble()
 
-
-class(chi_tracts_shp)
-plot(chi_tracts_shp$geometry)
 ```
 
 
 ### Library Catchment Areas
 
-To create the catchment areas I will create Thiessen/Voronoi polygons. This was done by using the st_voronoi() function on the library points data. Finally, I clipped the voronoi diagram by the Chicago shapefile. 
+To create proximal zones I generated Thiessen polygons from the library points. Thiessen polygons or a Voronoi diagram is a type tessellation; a tiling of a surface with geometric shapes with no overlaps or gaps. Every point within a polygon is nearer to its central point than any other point in the layer. Lastly, I clipped the voronoi diagram by the Chicago shapefile. 
 
 ```{r voronoi-polygons, warning = FALSE}
 
@@ -521,15 +561,21 @@ vorpoly <- st_union(points)%>%
   st_sf %>%
   st_cast
 
+
+# Because I had to union the points prior to st_voronoi() function the library attributes were lost
 # Rejoin attributes from library points data to voronoi polygons 
-# Because I had to union the points prior to st_voronoi() function the library attributes were lost 
+
 vorjoin <- st_join(vorpoly, points)
 
-# Clip voronoi polygons by Chicago boundary 
+# Clip Thiessen polygons by Chicago boundary 
 chi_vor <- st_intersection(vorjoin, chi)%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
-    
-# Plot polygons on a map with librayr points
+  
+
+```
+
+```{r map-thiessen}
+# Plot polygons on a map with library points
 
 vor_map <- tmap_mode("plot")
            tm_shape(chi_vor)+
@@ -540,7 +586,6 @@ vor_map <- tmap_mode("plot")
            tm_add_legend("symbol", col = "red", size = 0.5, labels = "Library Points")
            
 vor_map
-
 ```
 
 ### ACS data transformations
@@ -608,11 +653,6 @@ as_acs$male <- c(as_acs$B01001_002E)
                  
 as_acs$female <- c(as_acs$B01001_026E)
 
-
-
-
-
-
 # Rename Race columns to make the names more intuitive 
 
 race_acs$white <- c(race_acs$B03002_003E)
@@ -646,8 +686,7 @@ inc_acs$hhi4 <- c(inc_acs$B19001_013E)
 inc_acs$hhi5 <- c(inc_acs$B19001_014E + 
                     inc_acs$B19001_015E)
 
-inc_acs$hhi6 <- c(inc_acs$B19001_016E)
-inc_acs$hhi7 <- c(inc_acs$B19001_017E) 
+inc_acs$highinc <- c(inc_acs$B19001_016E + inc_acs$B19001_017E)
 
 
 # Make new columns for Employment status
@@ -731,7 +770,7 @@ as_tab <- as_acs %>%
   dplyr::select(GEOID,child, teen, yad, mad, sen, male, female)
 
 hhi_tab <- inc_acs %>%
-  dplyr::select(GEOID, hhi1, hhi2, hhi3, hhi4, hhi5, hhi6, hhi7)
+  dplyr::select(GEOID, hhi1, hhi2, hhi3, hhi4, hhi5, highinc)
 
 emp_tab <- emp_acs %>% 
   dplyr::select(GEOID, emp0, emp1)
@@ -747,9 +786,6 @@ race_tab <- race_acs %>%
 
 m_inc_tab <- m_inc_acs %>%
   dplyr::select(GEOID, B19013_001E)
-
-as_tab <- as_acs %>% 
-  dplyr::select(GEOID, child, teen, yad, mad, sen)
 
 lang_tab <-lang_acs %>%
   dplyr::select(GEOID, eng, noneng)
@@ -769,6 +805,7 @@ acs_table <- cook_tracts_tbl %>% inner_join(as_tab, by="GEOID")%>%
                                  inner_join(edu_tab, by="GEOID")%>%
                                  inner_join(lang_tab,by="GEOID")%>%
                                  inner_join(pov_tab, by="GEOID")%>%
+                                 inner_join(hhi_tab, by= "GEOID")%>%
 
   mutate(tract=substr(GEOID, 1, 11)) %>%  arrange(tract)
 
@@ -799,9 +836,14 @@ mutate(black_app=pop_wt*black)%>%
 mutate(white_app=pop_wt*white)%>%
 mutate(lang_app=pop_wt*noneng)%>%
 mutate(asian_app=pop_wt*asian)%>% 
-mutate(povtot_app=pop_wt*povtotal)
-# mutate(man_app=pop_wt*male)%>%
-# mutate(fem_app= pop_wt*female)
+mutate(povtot_app=pop_wt*povtotal)%>%
+mutate(child_app=pop_wt*child)%>%
+mutate(yad_app=pop_wt*yad)%>%
+mutate(mad_app=pop_wt*mad)%>%
+mutate(sen_app=pop_wt*sen)%>%
+mutate(man_app=pop_wt*male)%>%
+mutate(fem_app= pop_wt*female)%>% 
+mutate(hinc_app=pop_wt*highinc)
 
 ```
 
@@ -827,9 +869,15 @@ agg_white<- aggregate(white_app ~ NAME, data=lib_service, sum)
 agg_black<-aggregate(black_app ~ NAME, data=lib_service, sum)
 agg_asian<-aggregate(asian_app ~ NAME, data=lib_service, sum)
 agg_pov <- aggregate(povtot_app ~ NAME, data=lib_service, sum)
-# agg_fem <- aggregate(fem_app ~ NAME, data= lib_service, sum)
+agg_child <- aggregate(child_app ~ NAME, data=lib_service, sum)
+agg_yad <- aggregate(yad_app ~ NAME, data=lib_service, sum)
+agg_mad <- aggregate(mad_app ~ NAME, data=lib_service, sum)
+agg_sen <- aggregate(sen_app ~ NAME, data=lib_service, sum)
+agg_man <- aggregate(man_app ~ NAME, data=lib_service, sum)
+agg_fem <- aggregate(fem_app ~ NAME, data= lib_service, sum)
 agg_noneng <- aggregate(lang_app ~ NAME, data= lib_service, sum)
 agg_pop <- aggregate(block_pop ~ NAME, data= lib_service, sum)
+agg_hinc <- aggregate(hinc_app ~ NAME, data=lib_service,sum)
 
 #join back to catchment layer
 catchment <- chi_vor %>% merge(agg_latinx, by="NAME")%>% 
@@ -841,7 +889,14 @@ catchment <- chi_vor %>% merge(agg_latinx, by="NAME")%>%
   merge(agg_pop, by= "NAME")%>%
   merge(agg_black, by='NAME')%>%
   merge(agg_asian, by='NAME')%>% 
-  merge(agg_pov, by='NAME')
+  merge(agg_pov, by='NAME')%>% 
+  merge(agg_man, by= 'NAME')%>% 
+  merge(agg_fem, by= 'NAME')%>% 
+  merge(agg_child, by= 'NAME')%>% 
+  merge(agg_yad, by= 'NAME')%>% 
+  merge(agg_mad, by= 'NAME')%>% 
+  merge(agg_sen, by= 'NAME')%>% 
+  merge(agg_hinc, by='NAME')
 
 ```
 
@@ -849,45 +904,10 @@ catchment <- chi_vor %>% merge(agg_latinx, by="NAME")%>%
 
 catchment.norm <-catchment %>% 
 
-mutate(black_norm=black_app/block_pop, white_norm=white_app/block_pop, bach_norm=bach_app/block_pop, asian_norm=asian_app/block_pop, latinx_norm=latinx_app/block_pop, unemp_norm=unemp_app/block_pop, for_norm=for_app/block_pop, lang_norm=lang_app/block_pop, pov_norm=povtot_app/block_pop)
+mutate(black_norm=black_app/block_pop, white_norm=white_app/block_pop, bach_norm=bach_app/block_pop, asian_norm=asian_app/block_pop, latinx_norm=latinx_app/block_pop, unemp_norm=unemp_app/block_pop, for_norm=for_app/block_pop, lang_norm=lang_app/block_pop, pov_norm=povtot_app/block_pop, child_norm=child_app/block_pop, yad_norm=yad_app/block_pop, mad_norm=mad_app/block_pop, sen_norm=sen_app/block_pop, man_norm=man_app/block_pop, fem_norm=fem_app/block_pop, hinc_norm=hinc_app/block_pop)
 
 ```
 
-
-```{r map-catchment}
-tmap_style("white")
-tm_predictor <-tmap_mode("plot")
-
-tm_shape(catchment.norm) +
-  tm_polygons(col="unemp_norm", style="pretty",palette = brewer.pal(n = 5, name = "Oranges"), title="% Unemployed", lwd= NA, border.col="lightgrey") +
-  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)+ 
-  tm_shape(catchment) + 
-  tm_borders("white", lwd = .5)+ 
-  tm_shape(chi)+ 
-  tm_borders("darkgrey", lwd=.5)
-
-tm_predictor
-
-```
-
-```{r race-map}
-
-acs_data <- left_join(chi_tracts_shp, acs_table)
-
-race_pop <- mutate(acs_data, majRace = case_when(
-  white > .60 ~ 'White',
-  black > .60 ~ 'Black',
-  asian > .60 ~ 'Asian',
-  latinx > .60 ~ 'Latino',
-  mixed > .60 ~ 'Mixed',
-  TRUE ~ 'Other'))
-
-tmap_mode("plot")
-tm_shape(race_pop) +
-  tm_polygons(col="majRace", title="Racial Majority", lwd= 0, border.col="lightgrey") +
-  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)
-
-```
 ### join website data to voronoi shapefile 
 ```{r web_vor_shp}
 
@@ -907,7 +927,8 @@ web.new <- web_vor %>%
   mutate(NE_MATER=factor(NE_MATER, levels=c(0,1), labels=c( "No", "Yes")))%>%
   mutate(IP_HHELP=factor(IP_HHELP, levels=c(0,1), labels=c( "No", "Yes")))%>%
   mutate(STROOMS=factor(STROOMS, levels=c(0,1), labels=c( "No", "Yes")))%>%
-  mutate(COMP=factor(COMP, levels=c(0,1), labels=c( "No", "Yes")))
+  mutate(COMP=factor(COMP, levels=c(0,1), labels=c( "No", "Yes")))%>% 
+  st_drop_geometry()
              
 ```
 
@@ -915,15 +936,109 @@ web.new <- web_vor %>%
 
 # Join tables with predictor and outcome variables together for the statistical analysis
 
-grand_tbl <- inner_join(catchment, web, by="NAME") %>% 
-  dplyr::select(NAME, latinx_app, unemp_app, bach_app, for_app, white_app, fem_app, lang_app, block_pop, CIRC, VIST, HSPOT, CHBOOK, HHELP, IP_HHELP, CITCORNER, CYBNAV, UMEDIA)%>% 
-  st_drop_geometry()
+final_tbl <- full_join(catchment.norm, web.new, by="NAME")%>%
+  drop_na(CHBOOK)%>%
+  st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
+```
+
+```{r linear-regression}
+
+reg.umedia <- glm(UMEDIA ~ block_pop + child_norm + sen_app + fem_app + black_norm + asian_norm + latinx_norm + unemp_norm + pov_norm + hinc_norm + for_norm + bach_norm, data = final_tbl, family = "binomial")
+
+exp(coef(reg.umedia))
+
+summary(reg.umedia)
+
+reg.hspot <- glm(HSPOT ~ block_pop + child_norm + sen_app + fem_app + black_norm + asian_norm + latinx_norm + unemp_norm + pov_norm + hinc_norm + for_norm + bach_norm, data = final_tbl, family = "binomial")
+
+exp(coef(reg.hspot))
+
+summary(reg.hspot)
+
+reg.chbook <- glm(CHBOOK ~ block_pop + child_norm + sen_app + fem_app + black_norm + asian_norm + latinx_norm + unemp_norm + pov_norm + hinc_norm + for_norm + bach_norm, data = final_tbl, family = "binomial")
+exp(coef(reg.chbook))
+
+summary(reg.chbook)
+
+reg.mhss <- glm(MHSS ~ block_pop + child_norm + sen_app + fem_app + black_norm + asian_norm + latinx_norm + unemp_norm + pov_norm + hinc_norm + for_norm + bach_norm, data = final_tbl, family = "binomial")
+
+exp(coef(reg.mhss))
+
+summary(reg.mhss)
+
+reg.citcor <- glm(CITCORNER ~ block_pop + child_norm + sen_app + fem_app + black_norm + asian_norm + latinx_norm + unemp_norm + pov_norm + hinc_norm + for_norm + bach_norm, data = final_tbl, family = "binomial")
+
+exp(coef(reg.citcor))
+
+summary(reg.citcor)
+
+reg.cybnav <- glm(CYBNAV ~ block_pop + child_norm + sen_app + fem_app + black_norm + asian_norm + latinx_norm + unemp_norm + pov_norm + hinc_norm + for_norm + bach_norm, data = final_tbl, family = "binomial")
+
+exp(coef(reg.cybnav))
+
+summary(reg.cybnav)
 
 ```
 
 # Results
 
+##MAPS!
+
+```{r map-catchment}
+tmap_style("white")
+tm_predictor <-tmap_mode("plot")
+
+tm_shape(catchment.norm) +
+  tm_polygons(col="hinc_norm", style="pretty",palette = brewer.pal(n = 5, name = "Oranges"), title="% High Income", lwd= NA, border.col="lightgrey") +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)+ 
+  tm_shape(catchment) + 
+  tm_borders("white", lwd = .5)+ 
+  tm_shape(chi)+ 
+  tm_borders("darkgrey", lwd=.5)
+
+tm_predictor
+
+```
+
+```{r map-outcome}
+tm_outcome2 <- tmap_mode("plot")
+tm_shape(grand_tbl) +
+  tm_polygons(col="vist_norm", palette = brewer.pal(n = 5, name = "Greens"), style="jenks", title="VIST per capita", lwd= NA, border.col="lightgrey") +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)+ 
+  tm_shape(catchment) + 
+  tm_borders("white", lwd = .5)+ 
+  tm_shape(chi)+ 
+  tm_borders("darkgrey", lwd=.5)
+
+tm_outcome2
+```
+
+```{r race-map}
+
+acs_data <- st_join(chi_tracts_shp, catchment.norm)
+
+
+race_pop <- mutate(acs_data, majRace = case_when(
+  white_norm > 0.55 ~ 'White',
+  black_norm > 0.55 ~ 'Black',
+  asian_norm > 0.55 ~ 'Asian',
+  latinx_norm > 0.55 ~ 'Latino',
+  TRUE ~ 'No Majority'
+))
+
+tmap_style("white")
+tm_racemaj <-tmap_mode("plot")
+
+tm_racemaj<- tm_shape(race_pop) +
+  tm_polygons(col="majRace", title="Racial Majority by Tract", lwd= NA, border.col="lightgrey") +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)+ 
+  tm_shape(chi)+ 
+  tm_borders("darkgrey", lwd=.5)
+
+tm_racemaj
+
+```
 ```{r outliers}
 web %>% identify_outliers(VIST)%>%
   print(width=Inf)
@@ -961,6 +1076,92 @@ tm_shape(web.new) +
 
 tm_outcome2
 ```
+
+```{r filter-bars}
+
+hspot_summary <- final_tbl %>% 
+  group_by(HSPOT)%>% 
+  summarize(
+    total_pop=sum(block_pop),
+    total_child=sum(child_app)/total_pop,
+    total_sen=sum(sen_app)/total_pop, 
+    total_fem=sum(fem_app)/total_pop,
+    total_black=sum(black_app)/total_pop,
+    total_latinx=sum(latinx_app)/total_pop,
+    total_asian=sum(asian_app)/total_pop,
+    total_unemp=sum(unemp_app)/total_pop,
+    total_pov=sum(povtot_app)/total_pop,
+    total_hinc=sum(hinc_app)/total_pop,
+    total_for=sum(for_app)/total_pop,
+    total_bach=sum(bach_app)/total_pop)
+
+
+chbook_summary <- final_tbl %>% 
+  group_by(CHBOOK)%>% 
+  summarize(
+    total_pop=sum(block_pop),
+    total_child=sum(child_app)/total_pop,
+    total_sen=sum(sen_app)/total_pop, 
+    total_fem=sum(fem_app)/total_pop,
+    total_black=sum(black_app)/total_pop,
+    total_latinx=sum(latinx_app)/total_pop,
+    total_asian=sum(asian_app)/total_pop,
+    total_unemp=sum(unemp_app)/total_pop,
+    total_pov=sum(povtot_app)/total_pop,
+    total_hinc=sum(hinc_app)/total_pop,
+    total_for=sum(for_app)/total_pop,
+    total_bach=sum(bach_app)/total_pop)
+
+umedia_summary<- final_tbl %>% 
+  group_by(UMEDIA)%>% 
+  summarize(
+    total_pop=sum(block_pop),
+    total_child=sum(child_app)/total_pop,
+    total_sen=sum(sen_app)/total_pop, 
+    total_fem=sum(fem_app)/total_pop,
+    total_black=sum(black_app)/total_pop,
+    total_latinx=sum(latinx_app)/total_pop,
+    total_asian=sum(asian_app)/total_pop,
+    total_unemp=sum(unemp_app)/total_pop,
+    total_pov=sum(povtot_app)/total_pop,
+    total_hinc=sum(hinc_app)/total_pop,
+    total_for=sum(for_app)/total_pop,
+    total_bach=sum(bach_app)/total_pop)
+
+mhss_summary<- final_tbl %>% 
+  group_by(MHSS)%>% 
+  summarize(
+    total_pop=sum(block_pop),
+    total_child=sum(child_app)/total_pop,
+    total_sen=sum(sen_app)/total_pop, 
+    total_fem=sum(fem_app)/total_pop,
+    total_black=sum(black_app)/total_pop,
+    total_latinx=sum(latinx_app)/total_pop,
+    total_asian=sum(asian_app)/total_pop,
+    total_unemp=sum(unemp_app)/total_pop,
+    total_pov=sum(povtot_app)/total_pop,
+    total_hinc=sum(hinc_app)/total_pop,
+    total_for=sum(for_app)/total_pop,
+    total_bach=sum(bach_app)/total_pop)
+
+citcorner_summary <- final_tbl %>% 
+  group_by(CITCORNER)%>% 
+  summarize(
+    total_pop=sum(block_pop),
+    total_child=sum(child_app)/total_pop,
+    total_sen=sum(sen_app)/total_pop, 
+    total_fem=sum(fem_app)/total_pop,
+    total_black=sum(black_app)/total_pop,
+    total_latinx=sum(latinx_app)/total_pop,
+    total_asian=sum(asian_app)/total_pop,
+    total_unemp=sum(unemp_app)/total_pop,
+    total_pov=sum(povtot_app)/total_pop,
+    total_hinc=sum(hinc_app)/total_pop,
+    total_for=sum(for_app)/total_pop,
+    total_bach=sum(bach_app)/total_pop)
+
+```
+
 
 ``` {r rename}
 colnames(web) <- c('NAME','Circulation','Visitation', 'Hotspot Lending', 'Chromebook Lending', 'Homework Help','InPerson Homework Help', 'OL_HHELP', 'WL_HHELP', 'Citizenship Corner', 'CyberNavigators', 'OL_CYBNAV', 'WL_CYBNAV', 'Study Rooms', 'N_STROOMS','Meeting Room', 'YouMedia', 'NonEnglish Materials', 'LANG1', 'LANG2', 'LANG3', 'Computers', 'Computer Sessions', 'Mental Health Services')
@@ -1060,20 +1261,6 @@ max(catchment$povtot_app)
 
 ```
 
-```{r logistic-reg}
-log_tbl <- inner_join(catchment, web, by="NAME") %>% 
-  dplyr::select(latinx_app, unemp_app, bach_app, for_app, white_app, fem_app, lang_app, block_pop, CIRC, VIST, HSPOT, CHBOOK, HHELP, IP_HHELP, CITCORNER, CYBNAV, UMEDIA)%>% 
-  st_drop_geometry()
-
-logistic <- glm(UMEDIA ~., data= log_tbl, family="binomial")
-
-summary(logistic)
-
-ggplot(grand_tbl, aes(x = bach_app, y = CIRC)) +
-  geom_point(size = 2) +
-  geom_text(aes(label = NAME), vjust = -1, size= 2)
-
-```
 
 ```{r scatter-test}
 
@@ -1082,49 +1269,8 @@ ggplot(web, aes(x = VIST, y = CIRC)) +
   geom_text(aes(label = NAME), vjust = -1, size= 2)
 ```
 
-```{r join-web-catchment}
-s.catchment <- catchment %>% select(NAME, GEOID, latinx_app, unemp_app, bach_app, for_app, white_app, black_app, asian_app, block_pop, povtot_app, geometry, lang_app)
-
-n.catchment <- catchment.norm %>% select(NAME, GEOID,black_norm, white_norm, bach_norm, asian_norm, latinx_norm, unemp_norm, for_norm, lang_norm, pov_norm)
-
-join_web <- full_join(n.catchment, web, by= "NAME")
 
 
-```
-
-```{r linear-regression}
-reg.umedia <- glm(UMEDIA ~ black_norm + asian_norm + for_norm + unemp_norm + latinx_norm + bach_norm + pov_norm , data = join_web, family = "binomial")
-
-exp(coef(reg.umedia))
-
-summary(reg.umedia)
-
-reg.hspot <- glm(HSPOT ~ black_norm + asian_norm + for_norm + unemp_norm + latinx_norm + bach_norm + pov_norm , data = join_web, family = "binomial")
-
-exp(coef(reg.hspot))
-
-summary(reg.hspot)
-
-reg.chbook <- glm(CHBOOK ~ black_norm + asian_norm + for_norm + unemp_norm + latinx_norm + bach_norm + pov_norm , data = join_web, family = "binomial")
-
-exp(coef(reg.chbook))
-
-summary(reg.chbook)
-
-reg.mhss <- glm(MHSS ~ black_norm + asian_norm + for_norm + unemp_norm + latinx_norm + bach_norm + pov_norm , data = join_web, family = "binomial")
-
-exp(coef(reg.mhss))
-
-summary(reg.mhss)
-
-reg.citcor <- glm(CITCORNER ~ black_norm + asian_norm + for_norm + unemp_norm + latinx_norm + bach_norm + pov_norm , data = join_web, family = "binomial")
-
-exp(coef(reg.citcor))
-
-summary(reg.citcor)
-
-
-```
 ```{r traditiona-lgm}
 # trad
 
@@ -1142,6 +1288,40 @@ reg.compses <- lm(COMPSES ~ black_norm + asian_norm + for_norm + unemp_norm + la
 
 
 summary(reg.compses)
+
+```
+
+```{r block-tract-figure}
+tract <- chi_tracts_shp %>%
+  dplyr::filter(GEOID == '17031290900')
+
+
+blocks <- left_join(cook_blocks_shp, cook_blocks_tbl)%>%
+   st_intersection(tract)%>% 
+   st_collection_extract("POLYGON")%>%
+   select(GEOID, block_pop, geometry)
+
+no_pop <- blocks %>% 
+  dplyr::filter(block_pop == 0)
+
+
+```
+
+```{r map-blocks}
+
+block_figure <- tmap_mode("plot")
+tm_shape(blocks) +
+  tm_polygons(col="block_pop", palette = brewer.pal(n = 5, name = "YlOrRd"), style="jenks", title="Population in Block", lwd= NA, border.col="white", labels = c("1 to 16", "16 to 43", "43 to 78", "78 to 114", "114 to 168")) +
+  tm_layout(legend.width=3, legend.text.size = .6, legend.title.size = .8, asp=0.8)+
+  tm_shape(no_pop)+ 
+  tm_polygons(col ="lightgrey", lwd=NA, border.col="white")+ 
+  tm_shape(tract) + 
+  tm_borders("black", lwd = 1)+ 
+  tm_add_legend(type = c("fill"), 
+                labels = 'No Population', 
+                col= "lightgrey", border.col = "white", lwd=NA)
+
+block_figure
 ```
 # Discussion
 

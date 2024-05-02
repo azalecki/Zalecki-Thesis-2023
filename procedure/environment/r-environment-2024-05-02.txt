@@ -1,0 +1,63 @@
+R version 4.3.1 (2023-06-16 ucrt)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 11 x64 (build 22631)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=English_United States.utf8  LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8 LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: America/New_York
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] RColorBrewer_1.1-3     rstatix_0.7.2          webshot_0.5.4         
+ [4] spatstat_3.0-6         spatstat.linnet_3.1-1  spatstat.model_3.2-4  
+ [7] rpart_4.1.19           spatstat.explore_3.2-1 nlme_3.1-162          
+[10] spatstat.random_3.1-5  spatstat.geom_3.2-1    spatstat.data_3.0-1   
+[13] deldir_1.0-9           usethis_2.2.1          broom_1.0.5           
+[16] kableExtra_1.3.4       knitr_1.43             tmap_3.3-3            
+[19] pastecs_1.3.21         s2_1.1.4               rstudioapi_0.14       
+[22] rgdal_1.6-7            sp_2.0-0               tigris_2.0.3          
+[25] classInt_0.4-9         sf_1.0-13              lubridate_1.9.2       
+[28] forcats_1.0.0          stringr_1.5.0          dplyr_1.1.2           
+[31] purrr_1.0.1            readr_2.1.4            tidyr_1.3.0           
+[34] tibble_3.2.1           ggplot2_3.4.2          tidyverse_2.0.0       
+[37] tidycensus_1.4.1       here_1.0.1             groundhog_3.1.2       
+[40] conflicted_1.2.0      
+
+loaded via a namespace (and not attached):
+ [1] DBI_1.1.3             tmaptools_3.1-1       rlang_1.1.1          
+ [4] magrittr_2.0.3        e1071_1.7-13          compiler_4.3.1       
+ [7] mgcv_1.8-42           png_0.1-8             systemfonts_1.0.4    
+[10] vctrs_0.6.3           rvest_1.0.3           pkgconfig_2.0.3      
+[13] wk_0.7.3              crayon_1.5.2          fastmap_1.1.1        
+[16] backports_1.4.1       lwgeom_0.2-13         leafem_0.2.0         
+[19] utf8_1.2.3            rmarkdown_2.22        tzdb_0.4.0           
+[22] xfun_0.39             cachem_1.0.8          jsonlite_1.8.5       
+[25] goftest_1.2-3         uuid_1.1-0            spatstat.utils_3.0-3 
+[28] terra_1.7-39          parallel_4.3.1        R6_2.5.1             
+[31] stringi_1.7.12        car_3.1-2             boot_1.3-28.1        
+[34] stars_0.6-1           Rcpp_1.0.10           tensor_1.5           
+[37] base64enc_0.1-3       splines_4.3.1         Matrix_1.5-4.1       
+[40] timechange_0.2.0      tidyselect_1.2.0      dichromat_2.0-0.1    
+[43] abind_1.4-5           yaml_2.3.7            codetools_0.2-19     
+[46] lattice_0.21-8        leafsync_0.1.0        withr_2.5.0          
+[49] evaluate_0.21         polyclip_1.10-4       units_0.8-2          
+[52] proxy_0.4-27          xml2_1.3.4            pillar_1.9.0         
+[55] carData_3.0-5         KernSmooth_2.23-21    generics_0.1.3       
+[58] rprojroot_2.0.3       hms_1.1.3             munsell_0.5.0        
+[61] scales_1.2.1          class_7.3-22          glue_1.6.2           
+[64] tools_4.3.1           fs_1.6.2              XML_3.99-0.14        
+[67] grid_4.3.1            crosstalk_1.2.0       colorspace_2.1-0     
+[70] raster_3.6-20         cli_3.6.1             spatstat.sparse_3.0-2
+[73] rappdirs_0.3.3        fansi_1.0.4           viridisLite_0.4.2    
+[76] svglite_2.1.1         gtable_0.3.3          digest_0.6.31        
+[79] htmlwidgets_1.6.2     memoise_2.0.1         htmltools_0.5.5      
+[82] lifecycle_1.0.3       leaflet_2.1.2         httr_1.4.6           
