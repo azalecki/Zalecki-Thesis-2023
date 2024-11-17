@@ -1,7 +1,8 @@
 If you use this template for research, please [cite it](template_reference.bib):
 > Kedron, P., & Holler, J. (2023). Template for Reproducible and Replicable Research in Human-Environment and Geographical Sciences. https://doi.org/10.17605/OSF.IO/W29MQ
 
-# Analysis of Neighborhood Characteristics of Library Catchment Areas in Chicago, IL
+# Who Is the Public in Our Public Libraries? Exploring the Spatial Variations of Library Uses in Chicago, IL. 
+
 
 ### Authors
 
