@@ -9,19 +9,19 @@ If you use this template for research, please [cite it](template_reference.bib):
 
 ### Abstract
 
-Rising inequality and increased privatization of space in urban landscapes is bringing attention to some of the only public spaces left: libraries. This study analyzes to what extent library service areas differ along lines of inequality like race, class, etc. This study will delineate library catchment areas in Chicago, IL and compare them with socio-economic data at the tract and block level. This analysis is the first part of a two pronged methods that aims to answer the question of to what extent the catchment areas are distinct. 
+Considering the privatization of space within urban landscapes and growing disparities in equity, libraries have incredible potential to shed light on community needs and the power of public space . This paper investigates the ways in which library services and uses vary across space and the ways in which they map onto the diverse socioeconomic & demographic characteristics of the neighborhoods that they serve. To answer this question, I map socio-demographic variables from the 2021 American Community Survey onto library service areas generated using Thiessen polygons and population weighted reaggregation. I surveyed the Chicago Public Library profiles to collect library service data which was then analyzed alongside the socio-demographic variables. The study revealed that library service areas display significant socio-economic and demographic variability that reflect Chicago’s racial and economic segregation. Additionally, socio-economic and demographic characteristics shape the services and programming available at local libraries. Affluent and predominantly white areas showed higher rates of circulation and availability of mental health services while neighborhoods that were predominantly poor, Black and/or Latinx Socio-economic and demographic characteristics significantly shape the services, programming, and amenities at Chicago libraries, with affluent and predominantly white areas receiving higher circulation and specialized services, while disadvantaged, predominantly Black and Latinx areas rely more on non-traditional services like internet access and social support.
 
 ### Study Metadata
 
-- `Key words`: public space, library programs, inequality, gis
+- `Key words`: public space, library programs and services, inequality, gis
 - `Subject`: Social and Behavioral Sciences: Geography: Human Geography
 - `Date created`: 11/28/2023
-- `Date modified`: 12/5/2023
+- `Date modified`: 11/17/2024
 - `Spatial Coverage`: Chicago, IL
-- `Spatial Resolution`: Census Tracts, Census Blocks, Library Service Areas
+- `Spatial Resolution`: Census Tracts, Census Blocks, Library Service Areas delineated using Thiessen polygons
 - `Spatial Reference System`: EPSG:32616 
-- `Temporal Coverage`: 2017-Present
-- `Temporal Resolution`: Specify the temporal resolution of your study---i.e. the duration of time for which each observation represents or the revisit period for repeated observations
+- `Temporal Coverage`: 2017-2023
+- `Temporal Resolution`: n/a
 
 ## Metadata for access
 
