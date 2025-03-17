@@ -1,6 +1,3 @@
-If you use this template for research, please [cite it](template_reference.bib):
-> Kedron, P., & Holler, J. (2023). Template for Reproducible and Replicable Research in Human-Environment and Geographical Sciences. https://doi.org/10.17605/OSF.IO/W29MQ
-
 # Who Is the Public in Our Public Libraries? Exploring the Spatial Variations of Library Uses in Chicago, IL. 
 
 
@@ -55,5 +52,5 @@ Important local **documents** include:
 
 The [template_readme.md](template_readme.md) file contains more information on the design of this template and references used in the design.
 The [Template_LICENSE](Template_LICENSE) file provides the BSD 3-Clause license for using this template.
-To cite the template, please use [template_reference.bib](template_reference.bib) or:
 > Kedron, P., & Holler, J. (2023). Template for Reproducible and Replicable Research in Human-Environment and Geographical Sciences. https://doi.org/10.17605/OSF.IO/W29MQ
+
