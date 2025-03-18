@@ -197,7 +197,7 @@ cook_blocks_shp <- get_decennial(
   output = "wide",
   cache_table = TRUE,
   geometry = TRUE,
-  keep_geo_vars = TRUE) %>%
+  keep_geo_vars = TRUE)%>%
   st_set_crs(st_crs("+proj=utm +zone=16 +datum=WGS84"))
 
 # Save data to repository 
